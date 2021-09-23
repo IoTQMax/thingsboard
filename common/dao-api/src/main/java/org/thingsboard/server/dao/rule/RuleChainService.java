@@ -87,6 +87,6 @@ public interface RuleChainService {
 
     boolean unsetAutoAssignToEdgeRuleChain(TenantId tenantId, RuleChainId ruleChainId);
 
-    PageData<RuleChain> findAutoAssignToEdgeRuleChainsByTenantId(TenantId tenantId, PageLink pageLink);
+    ListenableFuture<List<RuleChain>> findAutoAssignToEdgeRuleChainsByTenantId(TenantId tenantId);
 
 }

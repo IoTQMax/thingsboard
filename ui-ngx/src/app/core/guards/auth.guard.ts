@@ -121,6 +121,7 @@ export class AuthGuard implements CanActivate, CanActivateChild {
           } else {
             const authority = Authority[authState.authUser.authority];
             if (data.auth && data.auth.indexOf(authority) === -1) {
+              //THERA OJO
               this.dialogService.forbidden();
               return of(false);
             } else if (data.redirectTo) {

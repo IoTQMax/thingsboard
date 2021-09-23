@@ -25,12 +25,9 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.access.AccessDeniedHandler;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.msg.tools.TbRateLimitsException;
@@ -43,15 +40,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+@Component
 @Slf4j
-@RestControllerAdvice
-public class ThingsboardErrorResponseHandler extends ResponseEntityExceptionHandler implements AccessDeniedHandler {
+public class ThingsboardErrorResponseHandler implements AccessDeniedHandler {
 
     @Autowired
     private ObjectMapper mapper;
 
     @Override
-    @ExceptionHandler(AccessDeniedException.class)
     public void handle(HttpServletRequest request, HttpServletResponse response,
                        AccessDeniedException accessDeniedException) throws IOException,
             ServletException {
@@ -64,7 +60,6 @@ public class ThingsboardErrorResponseHandler extends ResponseEntityExceptionHand
         }
     }
 
-    @ExceptionHandler(Exception.class)
     public void handle(Exception exception, HttpServletResponse response) {
         log.debug("Processing exception {}", exception.getMessage(), exception);
         if (!response.isCommitted()) {
@@ -153,7 +148,7 @@ public class ThingsboardErrorResponseHandler extends ResponseEntityExceptionHand
 
     private void handleAuthenticationException(AuthenticationException authenticationException, HttpServletResponse response) throws IOException {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        if (authenticationException instanceof BadCredentialsException || authenticationException instanceof UsernameNotFoundException) {
+        if (authenticationException instanceof BadCredentialsException) {
             mapper.writeValue(response.getWriter(), ThingsboardErrorResponse.of("Invalid username or password", ThingsboardErrorCode.AUTHENTICATION, HttpStatus.UNAUTHORIZED));
         } else if (authenticationException instanceof DisabledException) {
             mapper.writeValue(response.getWriter(), ThingsboardErrorResponse.of("User account is not active", ThingsboardErrorCode.AUTHENTICATION, HttpStatus.UNAUTHORIZED));
@@ -164,7 +159,7 @@ public class ThingsboardErrorResponseHandler extends ResponseEntityExceptionHand
         } else if (authenticationException instanceof AuthMethodNotSupportedException) {
             mapper.writeValue(response.getWriter(), ThingsboardErrorResponse.of(authenticationException.getMessage(), ThingsboardErrorCode.AUTHENTICATION, HttpStatus.UNAUTHORIZED));
         } else if (authenticationException instanceof UserPasswordExpiredException) {
-            UserPasswordExpiredException expiredException = (UserPasswordExpiredException) authenticationException;
+            UserPasswordExpiredException expiredException = (UserPasswordExpiredException)authenticationException;
             String resetToken = expiredException.getResetToken();
             mapper.writeValue(response.getWriter(), ThingsboardCredentialsExpiredResponse.of(expiredException.getMessage(), resetToken));
         } else {

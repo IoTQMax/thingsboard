@@ -59,6 +59,16 @@ export class MenuService {
               menuSections = this.buildTenantAdminMenu(authState);
               homeSections = this.buildTenantAdminHome(authState);
               break;
+//THERA BEGIN
+            case Authority.TENANT_INSTALL:
+              menuSections = this.buildTenantInstallMenu(authState);
+              homeSections = this.buildTenantInstallHome(authState);
+              break;
+            case Authority.TENANT_INTEGRA:
+              menuSections = this.buildTenantIntegraMenu(authState);
+              homeSections = this.buildTenantIntegraHome(authState);
+              break;
+//THERA END
             case Authority.CUSTOMER_USER:
               menuSections = this.buildCustomerUserMenu(authState);
               homeSections = this.buildCustomerUserHome(authState);
@@ -219,7 +229,7 @@ export class MenuService {
           {
             name: 'resource.resources-library',
             icon: 'folder',
-            path: '/settings/resources-library'
+            path: '/resources-library'
           }
         ]
       }
@@ -238,6 +248,16 @@ export class MenuService {
         notExact: true,
         icon: 'home'
       },
+// //THERA BEGIN
+//       { 
+//         id: guid(),
+//         name: 'tenant.tenants',
+//         type: 'link',
+//         path: ':tenantId/users',
+//         icon: 'supervisor_account'
+//       },
+// //THERA END
+
       {
         id: guid(),
         name: 'rulechain.rulechains',
@@ -508,6 +528,483 @@ export class MenuService {
     );
     return homeSections;
   }
+
+//THERA BEGIN
+private buildTenantIntegraMenu(authState: AuthState): Array<MenuSection> {
+  const sections: Array<MenuSection> = [];
+  sections.push(
+    {
+      id: guid(),
+      name: 'home.home',
+      type: 'link',
+      path: '/home',
+      notExact: true,
+      icon: 'home'
+    },
+    {
+      id: guid(),
+      name: 'rulechain.rulechains',
+      type: 'link',
+      path: '/ruleChains',
+      icon: 'settings_ethernet'
+    },
+    {
+      id: guid(),
+      name: 'customer.customers',
+      type: 'link',
+      path: '/customers',
+      icon: 'supervisor_account'
+    },
+    {
+      id: guid(),
+      name: 'asset.assets',
+      type: 'link',
+      path: '/assets',
+      icon: 'domain'
+    },
+    {
+      id: guid(),
+      name: 'device.devices',
+      type: 'link',
+      path: '/devices',
+      icon: 'devices_other'
+    },
+    {
+      id: guid(),
+      name: 'device-profile.device-profiles',
+      type: 'link',
+      path: '/deviceProfiles',
+      icon: 'mdi:alpha-d-box',
+      isMdiIcon: true
+    },
+    {
+      id: guid(),
+      name: 'ota-update.ota-updates',
+      type: 'link',
+      path: '/otaUpdates',
+      icon: 'memory'
+    },
+    {
+      id: guid(),
+      name: 'entity-view.entity-views',
+      type: 'link',
+      path: '/entityViews',
+      icon: 'view_quilt'
+    }
+  );
+  if (authState.edgesSupportEnabled) {
+    sections.push(
+      {
+        id: guid(),
+        name: 'edge.edge-instances',
+        type: 'link',
+        path: '/edgeInstances',
+        icon: 'router'
+      },
+      {
+        id: guid(),
+        name: 'edge.management',
+        type: 'toggle',
+        path: '/edgeManagement',
+        height: '40px',
+        icon: 'settings_input_antenna',
+        pages: [
+          {
+            id: guid(),
+            name: 'edge.rulechain-templates',
+            type: 'link',
+            path: '/edgeManagement/ruleChains',
+            icon: 'settings_ethernet'
+          }
+        ]
+      }
+    );
+  }
+  sections.push(
+    {
+      id: guid(),
+      name: 'widget.widget-library',
+      type: 'link',
+      path: '/widgets-bundles',
+      icon: 'now_widgets'
+    },
+    {
+      id: guid(),
+      name: 'dashboard.dashboards',
+      type: 'link',
+      path: '/dashboards',
+      icon: 'dashboards'
+    },
+    {
+      id: guid(),
+      name: 'audit-log.audit-logs',
+      type: 'link',
+      path: '/auditLogs',
+      icon: 'track_changes'
+    },
+    {
+      id: guid(),
+      name: 'api-usage.api-usage',
+      type: 'link',
+      path: '/usage',
+      icon: 'insert_chart',
+      notExact: true
+    },
+    {
+      id: guid(),
+      name: 'admin.system-settings',
+      type: 'toggle',
+      path: '/settings',
+      height: '80px',
+      icon: 'settings',
+      pages: [
+        {
+          id: guid(),
+          name: 'admin.home-settings',
+          type: 'link',
+          path: '/settings/home',
+          icon: 'settings_applications'
+        },
+        {
+          id: guid(),
+          name: 'resource.resources-library',
+          type: 'link',
+          path: '/settings/resources-library',
+          icon: 'folder'
+        }
+      ]
+    }
+  );
+  return sections;
+}
+
+private buildTenantIntegraHome(authState: AuthState): Array<HomeSection> {
+  const homeSections: Array<HomeSection> = [];
+  homeSections.push(
+    {
+      name: 'rulechain.management',
+      places: [
+        {
+          name: 'rulechain.rulechains',
+          icon: 'settings_ethernet',
+          path: '/ruleChains'
+        }
+      ]
+    },
+    {
+      name: 'customer.management',
+      places: [
+        {
+          name: 'customer.customers',
+          icon: 'supervisor_account',
+          path: '/customers'
+        }
+      ]
+    },
+    {
+      name: 'asset.management',
+      places: [
+        {
+          name: 'asset.assets',
+          icon: 'domain',
+          path: '/assets'
+        }
+      ]
+    },
+    {
+      name: 'device.management',
+      places: [
+        {
+          name: 'device.devices',
+          icon: 'devices_other',
+          path: '/devices'
+        },
+        {
+          name: 'device-profile.device-profiles',
+          icon: 'mdi:alpha-d-box',
+          isMdiIcon: true,
+          path: '/deviceProfiles'
+        },
+        {
+          name: 'ota-update.ota-updates',
+          icon: 'memory',
+          path: '/otaUpdates'
+        }
+      ]
+    },
+    {
+      name: 'entity-view.management',
+      places: [
+        {
+          name: 'entity-view.entity-views',
+          icon: 'view_quilt',
+          path: '/entityViews'
+        }
+      ]
+    }
+  );
+  if (authState.edgesSupportEnabled) {
+    homeSections.push(
+      {
+        name: 'edge.management',
+        places: [
+          {
+            name: 'edge.edge-instances',
+            icon: 'router',
+            path: '/edgeInstances'
+          },
+          {
+            name: 'edge.rulechain-templates',
+            icon: 'settings_ethernet',
+            path: '/edgeManagement/ruleChains'
+          }
+        ]
+      }
+    );
+  }
+  homeSections.push(
+    {
+      name: 'dashboard.management',
+      places: [
+        {
+          name: 'widget.widget-library',
+          icon: 'now_widgets',
+          path: '/widgets-bundles'
+        },
+        {
+          name: 'dashboard.dashboards',
+          icon: 'dashboard',
+          path: '/dashboards'
+        }
+      ]
+    },
+    {
+      name: 'audit-log.audit',
+      places: [
+        {
+          name: 'audit-log.audit-logs',
+          icon: 'track_changes',
+          path: '/auditLogs'
+        },
+        {
+          name: 'api-usage.api-usage',
+          icon: 'insert_chart',
+          path: '/usage'
+        }
+      ]
+    },
+    {
+      name: 'admin.system-settings',
+      places: [
+        {
+          name: 'admin.home-settings',
+          icon: 'settings_applications',
+          path: '/settings/home'
+        },
+        {
+          name: 'resource.resources-library',
+          icon: 'folder',
+          path: '/settings/resources-library'
+        }
+      ]
+    }
+  );
+  return homeSections;
+}
+//--------------------------------
+private buildTenantInstallMenu(authState: AuthState): Array<MenuSection> {
+  const sections: Array<MenuSection> = [];
+  sections.push(
+    {
+      id: guid(),
+      name: 'home.home',
+      type: 'link',
+      path: '/home',
+      notExact: true,
+      icon: 'home'
+    },
+    {
+      id: guid(),
+      name: 'customer.customers',
+      type: 'link',
+      path: '/customers',
+      icon: 'supervisor_account'
+    },
+    {
+      id: guid(),
+      name: 'device.devices',
+      type: 'link',
+      path: '/devices',
+      icon: 'devices_other'
+    },
+    {
+      id: guid(),
+      name: 'entity-view.entity-views',
+      type: 'link',
+      path: '/entityViews',
+      icon: 'view_quilt'
+    }
+  );
+  if (authState.edgesSupportEnabled) {
+    sections.push(
+      {
+        id: guid(),
+        name: 'edge.edge-instances',
+        type: 'link',
+        path: '/edgeInstances',
+        icon: 'router'
+      },
+      {
+        id: guid(),
+        name: 'edge.management',
+        type: 'toggle',
+        path: '/edgeManagement',
+        height: '40px',
+        icon: 'settings_input_antenna',
+        pages: [
+          {
+            id: guid(),
+            name: 'edge.rulechain-templates',
+            type: 'link',
+            path: '/edgeManagement/ruleChains',
+            icon: 'settings_ethernet'
+          }
+        ]
+      }
+    );
+  }
+  sections.push(
+    {
+      id: guid(),
+      name: 'widget.widget-library',
+      type: 'link',
+      path: '/widgets-bundles',
+      icon: 'now_widgets'
+    },
+    {
+      id: guid(),
+      name: 'dashboard.dashboards',
+      type: 'link',
+      path: '/dashboards',
+      icon: 'dashboards'
+    },
+    {
+      id: guid(),
+      name: 'admin.system-settings',
+      type: 'toggle',
+      path: '/settings',
+      height: '80px',
+      icon: 'settings',
+      pages: [
+        {
+          id: guid(),
+          name: 'admin.home-settings',
+          type: 'link',
+          path: '/settings/home',
+          icon: 'settings_applications'
+        },
+        {
+          id: guid(),
+          name: 'resource.resources-library',
+          type: 'link',
+          path: '/settings/resources-library',
+          icon: 'folder'
+        }
+      ]
+    }
+  );
+  return sections;
+}
+
+private buildTenantInstallHome(authState: AuthState): Array<HomeSection> {
+  const homeSections: Array<HomeSection> = [];
+  homeSections.push(
+    {
+      name: 'customer.management',
+      places: [
+        {
+          name: 'customer.customers',
+          icon: 'supervisor_account',
+          path: '/customers'
+        }
+      ]
+    },
+    {
+      name: 'device.management',
+      places: [
+        {
+          name: 'device.devices',
+          icon: 'devices_other',
+          path: '/devices'
+        }
+      ]
+    },
+    {
+      name: 'entity-view.management',
+      places: [
+        {
+          name: 'entity-view.entity-views',
+          icon: 'view_quilt',
+          path: '/entityViews'
+        }
+      ]
+    }
+  );
+  if (authState.edgesSupportEnabled) {
+    homeSections.push(
+      {
+        name: 'edge.management',
+        places: [
+          {
+            name: 'edge.edge-instances',
+            icon: 'router',
+            path: '/edgeInstances'
+          },
+          {
+            name: 'edge.rulechain-templates',
+            icon: 'settings_ethernet',
+            path: '/edgeManagement/ruleChains'
+          }
+        ]
+      }
+    );
+  }
+  homeSections.push(
+    {
+      name: 'dashboard.management',
+      places: [
+        {
+          name: 'widget.widget-library',
+          icon: 'now_widgets',
+          path: '/widgets-bundles'
+        },
+        {
+          name: 'dashboard.dashboards',
+          icon: 'dashboard',
+          path: '/dashboards'
+        }
+      ]
+    },
+    {
+      name: 'admin.system-settings',
+      places: [
+        {
+          name: 'admin.home-settings',
+          icon: 'settings_applications',
+          path: '/settings/home'
+        },
+        {
+          name: 'resource.resources-library',
+          icon: 'folder',
+          path: '/settings/resources-library'
+        }
+      ]
+    }
+  );
+  return homeSections;
+}
+
+//THERA END
 
   private buildCustomerUserMenu(authState: AuthState): Array<MenuSection> {
     const sections: Array<MenuSection> = [];

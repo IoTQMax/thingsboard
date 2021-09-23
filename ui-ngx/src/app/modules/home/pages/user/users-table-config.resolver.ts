@@ -82,9 +82,14 @@ export class UsersTableConfigResolver implements Resolve<EntityTableConfig<User>
 
     this.config.columns.push(
       new DateEntityTableColumn<User>('createdTime', 'common.created-time', this.datePipe, '150px'),
-      new EntityTableColumn<User>('firstName', 'user.first-name', '33%'),
-      new EntityTableColumn<User>('lastName', 'user.last-name', '33%'),
-      new EntityTableColumn<User>('email', 'user.email', '33%')
+//      new EntityTableColumn<User>('firstName', 'user.first-name', '33%'), //THERA
+//      new EntityTableColumn<User>('lastName', 'user.last-name', '33%'), //THERA
+//      new EntityTableColumn<User>('email', 'user.email', '33%') //THERA
+
+      new EntityTableColumn<User>('firstName', 'user.first-name', '25%'),
+      new EntityTableColumn<User>('lastName', 'user.last-name', '25%'),
+      new EntityTableColumn<User>('authority', 'user.authority', '25%'),
+      new EntityTableColumn<User>('email', 'user.email', '25%')
     );
 
     this.config.deleteEnabled = user => user && user.id && user.id.id !== this.authUser.id.id;
@@ -117,11 +122,11 @@ export class UsersTableConfigResolver implements Resolve<EntityTableConfig<User>
         }
         this.updateActionCellDescriptors(auth);
       }),
-      mergeMap(() => this.authority === Authority.TENANT_ADMIN ?
+      mergeMap(() => this.authority === Authority.TENANT_ADMIN || this.authority === Authority.TENANT_INSTALL || this.authority === Authority.TENANT_INTEGRA ? //THERA
         this.tenantService.getTenant(this.tenantId) :
         this.customerService.getCustomer(this.customerId)),
       map((parentEntity) => {
-        if (this.authority === Authority.TENANT_ADMIN) {
+        if (this.authority === Authority.TENANT_ADMIN || this.authority === Authority.TENANT_INSTALL || this.authority === Authority.TENANT_INTEGRA) { //THERA
           this.config.tableTitle = parentEntity.title + ': ' + this.translate.instant('user.tenant-admins');
         } else {
           this.config.tableTitle = parentEntity.title + ': ' + this.translate.instant('user.customer-users');
@@ -136,7 +141,7 @@ export class UsersTableConfigResolver implements Resolve<EntityTableConfig<User>
     if (auth.userTokenAccessEnabled) {
       this.config.cellActionDescriptors.push(
         {
-          name: this.authority === Authority.TENANT_ADMIN ?
+          name: this.authority === Authority.TENANT_ADMIN || this.authority === Authority.TENANT_INSTALL || this.authority === Authority.TENANT_INTEGRA ? //THERA
             this.translate.instant('user.login-as-tenant-admin') :
             this.translate.instant('user.login-as-customer-user'),
           mdiIcon: 'mdi:login',

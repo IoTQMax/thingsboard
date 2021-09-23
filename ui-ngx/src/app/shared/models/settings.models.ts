@@ -27,7 +27,6 @@ export interface AdminSettings<T> {
 export declare type SmtpProtocol = 'smtp' | 'smtps';
 
 export interface MailServerSettings {
-  showChangePassword: boolean;
   mailFrom: string;
   smtpProtocol: SmtpProtocol;
   smtpHost: string;
@@ -35,8 +34,7 @@ export interface MailServerSettings {
   timeout: number;
   enableTls: boolean;
   username: string;
-  changePassword?: boolean;
-  password?: string;
+  password: string;
   enableProxy: boolean;
   proxyHost: string;
   proxyPort: number;

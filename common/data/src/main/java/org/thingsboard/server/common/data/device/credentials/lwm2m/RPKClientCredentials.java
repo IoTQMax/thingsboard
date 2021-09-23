@@ -15,7 +15,7 @@
  */
 package org.thingsboard.server.common.data.device.credentials.lwm2m;
 
-public class RPKClientCredentials extends AbstractLwM2MClientCredentialsWithKey {
+public class RPKClientCredentials extends HasKey {
 
     @Override
     public LwM2MSecurityMode getSecurityConfigClientMode() {

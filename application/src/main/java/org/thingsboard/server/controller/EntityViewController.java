@@ -91,7 +91,7 @@ public class EntityViewController extends BaseController {
     @Autowired
     private TimeseriesService tsService;
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/entityView/{entityViewId}", method = RequestMethod.GET)
     @ResponseBody
     public EntityView getEntityViewById(@PathVariable(ENTITY_VIEW_ID) String strEntityViewId) throws ThingsboardException {
@@ -103,7 +103,7 @@ public class EntityViewController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/entityView/info/{entityViewId}", method = RequestMethod.GET)
     @ResponseBody
     public EntityViewInfo getEntityViewInfoById(@PathVariable(ENTITY_VIEW_ID) String strEntityViewId) throws ThingsboardException {
@@ -116,7 +116,7 @@ public class EntityViewController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/entityView", method = RequestMethod.POST)
     @ResponseBody
     public EntityView saveEntityView(@RequestBody EntityView entityView) throws ThingsboardException {
@@ -353,7 +353,7 @@ public class EntityViewController extends BaseController {
                 keys);
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/entityView/{entityViewId}", method = RequestMethod.DELETE)
     @ResponseStatus(value = HttpStatus.OK)
     public void deleteEntityView(@PathVariable(ENTITY_VIEW_ID) String strEntityViewId) throws ThingsboardException {
@@ -378,7 +378,7 @@ public class EntityViewController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/tenant/entityViews", params = {"entityViewName"}, method = RequestMethod.GET)
     @ResponseBody
     public EntityView getTenantEntityView(
@@ -391,7 +391,7 @@ public class EntityViewController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/customer/{customerId}/entityView/{entityViewId}", method = RequestMethod.POST)
     @ResponseBody
     public EntityView assignEntityViewToCustomer(@PathVariable(CUSTOMER_ID) String strCustomerId,
@@ -422,7 +422,7 @@ public class EntityViewController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/customer/entityView/{entityViewId}", method = RequestMethod.DELETE)
     @ResponseBody
     public EntityView unassignEntityViewFromCustomer(@PathVariable(ENTITY_VIEW_ID) String strEntityViewId) throws ThingsboardException {
@@ -451,7 +451,7 @@ public class EntityViewController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/customer/{customerId}/entityViews", params = {"pageSize", "page"}, method = RequestMethod.GET)
     @ResponseBody
     public PageData<EntityView> getCustomerEntityViews(
@@ -478,7 +478,7 @@ public class EntityViewController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/customer/{customerId}/entityViewInfos", params = {"pageSize", "page"}, method = RequestMethod.GET)
     @ResponseBody
     public PageData<EntityViewInfo> getCustomerEntityViewInfos(
@@ -505,7 +505,7 @@ public class EntityViewController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/tenant/entityViews", params = {"pageSize", "page"}, method = RequestMethod.GET)
     @ResponseBody
     public PageData<EntityView> getTenantEntityViews(
@@ -529,7 +529,7 @@ public class EntityViewController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/tenant/entityViewInfos", params = {"pageSize", "page"}, method = RequestMethod.GET)
     @ResponseBody
     public PageData<EntityViewInfo> getTenantEntityViewInfos(
@@ -552,7 +552,7 @@ public class EntityViewController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/entityViews", method = RequestMethod.POST)
     @ResponseBody
     public List<EntityView> findByQuery(@RequestBody EntityViewSearchQuery query) throws ThingsboardException {
@@ -576,7 +576,7 @@ public class EntityViewController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/entityView/types", method = RequestMethod.GET)
     @ResponseBody
     public List<EntitySubtype> getEntityViewTypes() throws ThingsboardException {
@@ -590,7 +590,7 @@ public class EntityViewController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/customer/public/entityView/{entityViewId}", method = RequestMethod.POST)
     @ResponseBody
     public EntityView assignEntityViewToPublicCustomer(@PathVariable(ENTITY_VIEW_ID) String strEntityViewId) throws ThingsboardException {
@@ -614,7 +614,7 @@ public class EntityViewController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/edge/{edgeId}/entityView/{entityViewId}", method = RequestMethod.POST)
     @ResponseBody
     public EntityView assignEntityViewToEdge(@PathVariable(EDGE_ID) String strEdgeId,
@@ -626,7 +626,7 @@ public class EntityViewController extends BaseController {
             Edge edge = checkEdgeId(edgeId, Operation.READ);
 
             EntityViewId entityViewId = new EntityViewId(toUUID(strEntityViewId));
-            checkEntityViewId(entityViewId, Operation.READ);
+            checkEntityViewId(entityViewId, Operation.ASSIGN_TO_EDGE);
 
             EntityView savedEntityView = checkNotNull(entityViewService.assignEntityViewToEdge(getTenantId(), entityViewId, edgeId));
             logEntityAction(entityViewId, savedEntityView,
@@ -644,7 +644,7 @@ public class EntityViewController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/edge/{edgeId}/entityView/{entityViewId}", method = RequestMethod.DELETE)
     @ResponseBody
     public EntityView unassignEntityViewFromEdge(@PathVariable(EDGE_ID) String strEdgeId,
@@ -656,7 +656,7 @@ public class EntityViewController extends BaseController {
             Edge edge = checkEdgeId(edgeId, Operation.READ);
 
             EntityViewId entityViewId = new EntityViewId(toUUID(strEntityViewId));
-            EntityView entityView = checkEntityViewId(entityViewId, Operation.READ);
+            EntityView entityView = checkEntityViewId(entityViewId, Operation.UNASSIGN_FROM_EDGE);
 
             EntityView savedEntityView = checkNotNull(entityViewService.unassignEntityViewFromEdge(getTenantId(), entityViewId, edgeId));
             logEntityAction(entityViewId, entityView,
@@ -674,7 +674,7 @@ public class EntityViewController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/edge/{edgeId}/entityViews", params = {"pageSize", "page"}, method = RequestMethod.GET)
     @ResponseBody
     public PageData<EntityView> getEdgeEntityViews(

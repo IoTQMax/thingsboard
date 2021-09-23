@@ -1,10 +1,10 @@
-# Kubernetes resources configuration for ThingsBoard Microservices
+# Kubernetes resources configuration for Effi.ai Microservices
 
-This folder containing scripts and Kubernetes resources configurations to run ThingsBoard in Microservices mode.
+This folder containing scripts and Kubernetes resources configurations to run Effi.ai in Microservices mode.
 
 ## Prerequisites
 
-ThingsBoard Microservices run on the Kubernetes cluster.
+Effi.ai Microservices run on the Kubernetes cluster.
 You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster.
 If you do not have a cluster already, you can create one by using [Minikube](https://kubernetes.io/docs/setup/minikube), 
 or you can choose any other available [Kubernetes cluster deployment solutions](https://kubernetes.io/docs/setup/pick-right-solution/).
@@ -20,7 +20,7 @@ $ minikube addons enable ingress
 
 ## Installation
 
-Before performing initial installation you can configure the type of database to be used with ThingsBoard and the type of deployment.
+Before performing initial installation you can configure the type of database to be used with Effi.ai and the type of deployment.
 To set database type change the value of `DATABASE` variable in `.env` file to one of the following:
 
 - `postgres` - use PostgreSQL database;
@@ -53,7 +53,7 @@ Execute the following command to deploy third-party resources:
 $ ./k8s-deploy-thirdparty.sh
 `
 
-Type **'yes'** when prompted, if you are running ThingsBoard in `high-availability` `DEPLOYMENT_TYPE` for the first time and don't have configured Redis cluster.
+Type **'yes'** when prompted, if you are running Effi.ai in `high-availability` `DEPLOYMENT_TYPE` for the first time and don't have configured Redis cluster.
 
 Execute the following command to deploy resources:
 
@@ -62,19 +62,19 @@ $ ./k8s-deploy-resources.sh
 `
 
 After a while when all resources will be successfully started you can open `http://{your-cluster-ip}` in your browser (for ex. `http://192.168.99.101`).
-You should see the ThingsBoard login page.
+You should see the Effi.ai login page.
 
 Use the following default credentials:
 
-- **System Administrator**: sysadmin@thingsboard.org / sysadmin
+- **System Administrator**: sysadmin@effi.ai / sysadmin
 
 If you installed DataBase with demo data (using `--loadDemo` flag) you can also use the following credentials:
 
-- **Tenant Administrator**: tenant@thingsboard.org / tenant
-- **Customer User**: customer@thingsboard.org / customer
+- **Tenant Administrator**: tenant@effi.ai / tenant
+- **Customer User**: customer@effi.ai / customer
 
 In case of any issues, you can examine service logs for errors.
-For example to see ThingsBoard node logs execute the following commands:
+For example to see Effi.ai node logs execute the following commands:
 
 1) Get the list of the running tb-node pods:
 
@@ -97,7 +97,7 @@ Or use `kubectl get services` to see the state of all the services.
 Or use `kubectl get deployments` to see the state of all the deployments.
 See [kubectl Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/) command reference for details.
 
-Execute the following command to delete all ThingsBoard microservices:
+Execute the following command to delete all Effi.ai microservices:
 
 `
 $ ./k8s-delete-resources.sh

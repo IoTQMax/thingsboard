@@ -36,6 +36,7 @@ public class AuditLog extends BaseData<AuditLogId> {
     private ActionStatus actionStatus;
     private String actionFailureDetails;
 
+    
     public AuditLog() {
         super();
     }

@@ -14,7 +14,7 @@
 /// limitations under the License.
 ///
 
-import { ChangeDetectorRef, Component, Inject } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { AppState } from '@core/core.state';
 import { EntityComponent } from '../../components/entity/entity.component';
@@ -53,9 +53,8 @@ export class EntityViewComponent extends EntityComponent<EntityViewInfo> {
               protected translate: TranslateService,
               @Inject('entity') protected entityValue: EntityViewInfo,
               @Inject('entitiesTableConfig') protected entitiesTableConfigValue: EntityTableConfig<EntityViewInfo>,
-              public fb: FormBuilder,
-              protected cd: ChangeDetectorRef) {
-    super(store, fb, entityValue, entitiesTableConfigValue, cd);
+              public fb: FormBuilder) {
+    super(store, fb, entityValue, entitiesTableConfigValue);
   }
 
   ngOnInit() {

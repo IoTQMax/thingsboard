@@ -35,6 +35,26 @@ public interface CustomerRepository extends PagingAndSortingRepository<CustomerE
                                         @Param("textSearch") String textSearch,
                                         Pageable pageable);
 
+//THERA BEGIN
+    @Query("SELECT c FROM CustomerEntity c WHERE c.tenantId = :tenantId " +
+    "AND c.installerId = :installerId " +
+    "AND LOWER(c.searchText) LIKE LOWER(CONCAT(:textSearch, '%'))")
+    Page<CustomerEntity> findByTenantInstallerId(@Param("installerId") UUID installerId,
+                                               @Param("tenantId") UUID tenantId,
+                                               @Param("textSearch") String textSearch,
+                                               Pageable pageable);
+
+    @Query("SELECT c FROM CustomerEntity c WHERE c.tenantId = :tenantId " +
+    "AND c.integratorId = :integratorId " +
+    "AND LOWER(c.searchText) LIKE LOWER(CONCAT(:textSearch, '%'))")
+    Page<CustomerEntity> findByTenantIntegratorId(@Param("integratorId") UUID integratorId,
+                                                @Param("tenantId") UUID tenantId,
+                                                @Param("textSearch") String textSearch,
+                                                Pageable pageable);
+
+                            
+//THERA END
+
     CustomerEntity findByTenantIdAndTitle(UUID tenantId, String title);
 
     Long countByTenantId(UUID tenantId);

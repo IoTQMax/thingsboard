@@ -63,7 +63,6 @@ export interface IDashboardComponent {
   dashboardWidgets: DashboardWidgets;
   mobileAutofillHeight: boolean;
   isMobileSize: boolean;
-  isEdit: boolean;
   autofillHeight: boolean;
   dashboardTimewindow: Timewindow;
   dashboardTimewindowChanged: Observable<Timewindow>;
@@ -100,14 +99,7 @@ export class DashboardWidgets implements Iterable<DashboardWidget> {
   widgetLayouts: WidgetLayouts;
 
   [Symbol.iterator](): Iterator<DashboardWidget> {
-    return this.activeDashboardWidgets[Symbol.iterator]();
-  }
-
-  get activeDashboardWidgets(): Array<DashboardWidget> {
-    if (this.dashboard.isMobileSize && !this.dashboard.isEdit) {
-      return this.dashboardWidgets.filter(w => !w.mobileHide);
-    }
-    return this.dashboardWidgets;
+    return this.dashboardWidgets[Symbol.iterator]();
   }
 
   constructor(private dashboard: IDashboardComponent,
@@ -160,7 +152,6 @@ export class DashboardWidgets implements Iterable<DashboardWidget> {
     }
     if (updateRecords.length) {
       updateRecords.forEach((record) => {
-        let index;
         switch (record.operation) {
           case 'add':
             this.dashboardWidgets.push(
@@ -168,7 +159,7 @@ export class DashboardWidgets implements Iterable<DashboardWidget> {
             );
             break;
           case 'remove':
-            index = this.dashboardWidgets.findIndex((dashboardWidget) => dashboardWidget.widgetId === record.widgetId);
+            let index = this.dashboardWidgets.findIndex((dashboardWidget) => dashboardWidget.widgetId === record.widgetId);
             if (index > -1) {
               this.dashboardWidgets.splice(index, 1);
             }
@@ -270,7 +261,7 @@ export class DashboardWidgets implements Iterable<DashboardWidget> {
 
   private updateRowsAndSort() {
     let maxRows = this.dashboard.gridsterOpts.maxRows;
-    this.activeDashboardWidgets.forEach((dashboardWidget) => {
+    this.dashboardWidgets.forEach((dashboardWidget) => {
       const bottom = dashboardWidget.y + dashboardWidget.rows;
       maxRows = Math.max(maxRows, bottom);
     });
@@ -336,10 +327,6 @@ export class DashboardWidget implements GridsterItem, IDashboardWidget {
 
   private gridsterItemComponentSubject = new Subject<GridsterItemComponentInterface>();
   private gridsterItemComponentValue: GridsterItemComponentInterface;
-
-  get mobileHide(): boolean {
-    return this.widgetLayout ? this.widgetLayout.mobileHide === true : false;
-  }
 
   set gridsterItemComponent(item: GridsterItemComponentInterface) {
     this.gridsterItemComponentValue = item;
@@ -436,7 +423,7 @@ export class DashboardWidget implements GridsterItem, IDashboardWidget {
     this.showWidgetTitlePanel = this.widgetContext.hideTitlePanel ? false :
       this.showTitle || this.hasTimewindow;
 
-    this.showWidgetActions = !this.widgetContext.hideTitlePanel;
+    this.showWidgetActions = this.widgetContext.hideTitlePanel ? false : true;
 
     this.customHeaderActions = this.widgetContext.customHeaderActions ? this.widgetContext.customHeaderActions : [];
     this.widgetActions = this.widgetContext.widgetActions ? this.widgetContext.widgetActions : [];

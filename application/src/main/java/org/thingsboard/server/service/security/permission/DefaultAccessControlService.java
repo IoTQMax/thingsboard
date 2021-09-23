@@ -41,9 +41,13 @@ public class DefaultAccessControlService implements AccessControlService {
     public DefaultAccessControlService(
             @Qualifier("sysAdminPermissions") Permissions sysAdminPermissions,
             @Qualifier("tenantAdminPermissions") Permissions tenantAdminPermissions,
+            @Qualifier("tenantInstallPermissions") Permissions tenantInstallPermissions, //THERA
+            @Qualifier("tenantIntegraPermissions") Permissions tenantIntegraPermissions, //THERA
             @Qualifier("customerUserPermissions") Permissions customerUserPermissions) {
         authorityPermissions.put(Authority.SYS_ADMIN, sysAdminPermissions);
         authorityPermissions.put(Authority.TENANT_ADMIN, tenantAdminPermissions);
+        authorityPermissions.put(Authority.TENANT_INSTALL, tenantInstallPermissions); //THERA
+        authorityPermissions.put(Authority.TENANT_INTEGRA, tenantIntegraPermissions); //THERA
         authorityPermissions.put(Authority.CUSTOMER_USER, customerUserPermissions);
     }
 
@@ -64,7 +68,7 @@ public class DefaultAccessControlService implements AccessControlService {
             permissionDenied();
         }
     }
-
+//THERA OJO
     private PermissionChecker getPermissionChecker(Authority authority, Resource resource) throws ThingsboardException {
         Permissions permissions = authorityPermissions.get(authority);
         if (permissions == null) {

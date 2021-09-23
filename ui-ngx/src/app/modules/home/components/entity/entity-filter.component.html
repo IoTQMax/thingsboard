@@ -53,8 +53,6 @@
       </tb-entity-type-select>
       <mat-form-field class="mat-block">
         <mat-label translate>entity.name-starts-with</mat-label>
-        <mat-icon class="mat-primary" aria-hidden="false" aria-label="help-icon" matSuffix style="cursor:pointer;"
-                  matTooltip="{{'entity.help-text' | translate }}">help</mat-icon>
         <input matInput formControlName="entityNameFilter" required>
         <mat-error *ngIf="filterFormGroup.get('entityNameFilter').hasError('required')">
           {{ 'entity.entity-name-filter-required' | translate }}
@@ -89,8 +87,6 @@
       </tb-entity-subtype-autocomplete>
       <mat-form-field class="mat-block">
         <mat-label translate>asset.name-starts-with</mat-label>
-        <mat-icon class="mat-primary" aria-hidden="false" aria-label="help-icon" matSuffix style="cursor:pointer;"
-                  matTooltip="{{'asset.help-text' | translate }}">help</mat-icon>
         <input matInput formControlName="assetNameFilter">
       </mat-form-field>
     </ng-template>
@@ -101,8 +97,6 @@
       </tb-entity-subtype-autocomplete>
       <mat-form-field class="mat-block">
         <mat-label translate>device.name-starts-with</mat-label>
-        <mat-icon class="mat-primary" aria-hidden="false" aria-label="help-icon" matSuffix style="cursor:pointer;"
-                  matTooltip="{{'device.help-text' | translate }}">help</mat-icon>
         <input matInput formControlName="deviceNameFilter">
       </mat-form-field>
     </ng-template>
@@ -113,8 +107,6 @@
       </tb-entity-subtype-autocomplete>
       <mat-form-field class="mat-block">
         <mat-label translate>entity-view.name-starts-with</mat-label>
-        <mat-icon class="mat-primary" aria-hidden="false" aria-label="help-icon" matSuffix style="cursor:pointer;"
-                  matTooltip="{{'entity-view.help-text' | translate }}">help</mat-icon>
         <input matInput formControlName="entityViewNameFilter">
       </mat-form-field>
     </ng-template>

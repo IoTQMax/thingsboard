@@ -39,6 +39,27 @@
         </mat-option>
       </mat-select>
     </mat-form-field>
+    <section class="tb-home-dashboard" fxFlex fxLayout="column" fxLayout.gt-sm="row" *ngIf="isSysAdmin()">
+      <mat-form-field class="mat-block">
+        <mat-label translate>user.authority</mat-label>
+        <mat-select [ngModelOptions]="{standalone: true}" [(ngModel)]="tenantUserProfile">
+          <mat-option *ngFor="let tenantUserProfile of tenantUserProfiles" [value]="tenantUserProfile">
+            {{ tenantuserProfileTranslations.get(tenantUserProfileEnum[tenantUserProfile]) | translate }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </section>
+
+    <section class="tb-home-dashboard" fxFlex fxLayout="column" fxLayout.gt-sm="row" *ngIf="!isSysAdmin()">
+      <mat-form-field class="mat-block">
+        <mat-label translate>user.authority</mat-label>
+        <mat-select [ngModelOptions]="{standalone: true}" [(ngModel)]="customerUserProfile">
+          <mat-option *ngFor="let customerUserProfile of customerUserProfiles" [value]="customerUserProfile">
+            {{ customeruserProfileTranslations.get(customerUserProfileEnum[customerUserProfile]) | translate }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </section>    
   </div>
   <div mat-dialog-actions fxLayoutAlign="end center">
     <button mat-button color="primary"

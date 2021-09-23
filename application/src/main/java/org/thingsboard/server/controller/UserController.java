@@ -82,7 +82,7 @@ public class UserController extends BaseController {
     private final SystemSecurityService systemSecurityService;
     private final ApplicationEventPublisher eventPublisher;
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/user/{userId}", method = RequestMethod.GET)
     @ResponseBody
     public User getUserById(@PathVariable(USER_ID) String strUserId) throws ThingsboardException {
@@ -105,14 +105,14 @@ public class UserController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/user/tokenAccessEnabled", method = RequestMethod.GET)
     @ResponseBody
     public boolean isUserTokenAccessEnabled() {
         return userTokenAccessEnabled;
     }
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/user/{userId}/token", method = RequestMethod.GET)
     @ResponseBody
     public JsonNode getUserToken(@PathVariable(USER_ID) String strUserId) throws ThingsboardException {
@@ -140,7 +140,7 @@ public class UserController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/user", method = RequestMethod.POST)
     @ResponseBody
     public User saveUser(@RequestBody User user,
@@ -188,7 +188,7 @@ public class UserController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/user/sendActivationMail", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
     public void sendActivationEmail(
@@ -214,7 +214,7 @@ public class UserController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/user/{userId}/activationLink", method = RequestMethod.GET, produces = "text/plain")
     @ResponseBody
     public String getActivationLink(
@@ -239,7 +239,7 @@ public class UserController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/user/{userId}", method = RequestMethod.DELETE)
     @ResponseStatus(value = HttpStatus.OK)
     public void deleteUser(@PathVariable(USER_ID) String strUserId) throws ThingsboardException {
@@ -267,7 +267,7 @@ public class UserController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/users", params = {"pageSize", "page"}, method = RequestMethod.GET)
     @ResponseBody
     public PageData<User> getUsers(
@@ -309,7 +309,7 @@ public class UserController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/customer/{customerId}/users", params = {"pageSize", "page"}, method = RequestMethod.GET)
     @ResponseBody
     public PageData<User> getCustomerUsers(
@@ -331,7 +331,7 @@ public class UserController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/user/{userId}/userCredentialsEnabled", method = RequestMethod.POST)
     @ResponseBody
     public void setUserCredentialsEnabled(@PathVariable(USER_ID) String strUserId,

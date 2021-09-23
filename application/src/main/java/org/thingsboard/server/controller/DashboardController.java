@@ -73,21 +73,21 @@ public class DashboardController extends BaseController {
     private long maxDatapointsLimit;
 
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/dashboard/serverTime", method = RequestMethod.GET)
     @ResponseBody
     public long getServerTime() throws ThingsboardException {
         return System.currentTimeMillis();
     }
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/dashboard/maxDatapointsLimit", method = RequestMethod.GET)
     @ResponseBody
     public long getMaxDatapointsLimit() throws ThingsboardException {
         return maxDatapointsLimit;
     }
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/dashboard/info/{dashboardId}", method = RequestMethod.GET)
     @ResponseBody
     public DashboardInfo getDashboardInfoById(@PathVariable(DASHBOARD_ID) String strDashboardId) throws ThingsboardException {
@@ -100,7 +100,7 @@ public class DashboardController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/dashboard/{dashboardId}", method = RequestMethod.GET)
     @ResponseBody
     public Dashboard getDashboardById(@PathVariable(DASHBOARD_ID) String strDashboardId) throws ThingsboardException {
@@ -113,7 +113,7 @@ public class DashboardController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/dashboard", method = RequestMethod.POST)
     @ResponseBody
     public Dashboard saveDashboard(@RequestBody Dashboard dashboard) throws ThingsboardException {
@@ -141,7 +141,7 @@ public class DashboardController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/dashboard/{dashboardId}", method = RequestMethod.DELETE)
     @ResponseStatus(value = HttpStatus.OK)
     public void deleteDashboard(@PathVariable(DASHBOARD_ID) String strDashboardId) throws ThingsboardException {
@@ -170,7 +170,7 @@ public class DashboardController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/customer/{customerId}/dashboard/{dashboardId}", method = RequestMethod.POST)
     @ResponseBody
     public Dashboard assignDashboardToCustomer(@PathVariable("customerId") String strCustomerId,
@@ -203,7 +203,7 @@ public class DashboardController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/customer/{customerId}/dashboard/{dashboardId}", method = RequestMethod.DELETE)
     @ResponseBody
     public Dashboard unassignDashboardFromCustomer(@PathVariable("customerId") String strCustomerId,
@@ -235,7 +235,7 @@ public class DashboardController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/dashboard/{dashboardId}/customers", method = RequestMethod.POST)
     @ResponseBody
     public Dashboard updateDashboardCustomers(@PathVariable(DASHBOARD_ID) String strDashboardId,
@@ -301,7 +301,7 @@ public class DashboardController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/dashboard/{dashboardId}/customers/add", method = RequestMethod.POST)
     @ResponseBody
     public Dashboard addDashboardCustomers(@PathVariable(DASHBOARD_ID) String strDashboardId,
@@ -345,7 +345,7 @@ public class DashboardController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/dashboard/{dashboardId}/customers/remove", method = RequestMethod.POST)
     @ResponseBody
     public Dashboard removeDashboardCustomers(@PathVariable(DASHBOARD_ID) String strDashboardId,
@@ -389,7 +389,7 @@ public class DashboardController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/customer/public/dashboard/{dashboardId}", method = RequestMethod.POST)
     @ResponseBody
     public Dashboard assignDashboardToPublicCustomer(@PathVariable(DASHBOARD_ID) String strDashboardId) throws ThingsboardException {
@@ -415,7 +415,7 @@ public class DashboardController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/customer/public/dashboard/{dashboardId}", method = RequestMethod.DELETE)
     @ResponseBody
     public Dashboard unassignDashboardFromPublicCustomer(@PathVariable(DASHBOARD_ID) String strDashboardId) throws ThingsboardException {
@@ -462,37 +462,31 @@ public class DashboardController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/tenant/dashboards", params = {"pageSize", "page"}, method = RequestMethod.GET)
     @ResponseBody
     public PageData<DashboardInfo> getTenantDashboards(
             @RequestParam int pageSize,
             @RequestParam int page,
-            @RequestParam(required = false) Boolean mobile,
             @RequestParam(required = false) String textSearch,
             @RequestParam(required = false) String sortProperty,
             @RequestParam(required = false) String sortOrder) throws ThingsboardException {
         try {
             TenantId tenantId = getCurrentUser().getTenantId();
             PageLink pageLink = createPageLink(pageSize, page, textSearch, sortProperty, sortOrder);
-            if (mobile != null && mobile.booleanValue()) {
-                return checkNotNull(dashboardService.findMobileDashboardsByTenantId(tenantId, pageLink));
-            } else {
-                return checkNotNull(dashboardService.findDashboardsByTenantId(tenantId, pageLink));
-            }
+            return checkNotNull(dashboardService.findDashboardsByTenantId(tenantId, pageLink));
         } catch (Exception e) {
             throw handleException(e);
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/customer/{customerId}/dashboards", params = {"pageSize", "page"}, method = RequestMethod.GET)
     @ResponseBody
     public PageData<DashboardInfo> getCustomerDashboards(
             @PathVariable("customerId") String strCustomerId,
             @RequestParam int pageSize,
             @RequestParam int page,
-            @RequestParam(required = false) Boolean mobile,
             @RequestParam(required = false) String textSearch,
             @RequestParam(required = false) String sortProperty,
             @RequestParam(required = false) String sortOrder) throws ThingsboardException {
@@ -502,11 +496,7 @@ public class DashboardController extends BaseController {
             CustomerId customerId = new CustomerId(toUUID(strCustomerId));
             checkCustomerId(customerId, Operation.READ);
             PageLink pageLink = createPageLink(pageSize, page, textSearch, sortProperty, sortOrder);
-            if (mobile != null && mobile.booleanValue()) {
-                return checkNotNull(dashboardService.findMobileDashboardsByTenantIdAndCustomerId(tenantId, customerId, pageLink));
-            } else {
-                return checkNotNull(dashboardService.findDashboardsByTenantIdAndCustomerId(tenantId, customerId, pageLink));
-            }
+            return checkNotNull(dashboardService.findDashboardsByTenantIdAndCustomerId(tenantId, customerId, pageLink));
         } catch (Exception e) {
             throw handleException(e);
         }
@@ -574,7 +564,7 @@ public class DashboardController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/tenant/dashboard/home/info", method = RequestMethod.GET)
     @ResponseBody
     public HomeDashboardInfo getTenantHomeDashboardInfo() throws ThingsboardException {
@@ -596,7 +586,7 @@ public class DashboardController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/tenant/dashboard/home/info", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
     public void setTenantHomeDashboardInfo(@RequestBody HomeDashboardInfo homeDashboardInfo) throws ThingsboardException {
@@ -655,7 +645,7 @@ public class DashboardController extends BaseController {
         return null;
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/edge/{edgeId}/dashboard/{dashboardId}", method = RequestMethod.POST)
     @ResponseBody
     public Dashboard assignDashboardToEdge(@PathVariable("edgeId") String strEdgeId,
@@ -667,7 +657,7 @@ public class DashboardController extends BaseController {
             Edge edge = checkEdgeId(edgeId, Operation.READ);
 
             DashboardId dashboardId = new DashboardId(toUUID(strDashboardId));
-            checkDashboardId(dashboardId, Operation.READ);
+            checkDashboardId(dashboardId, Operation.ASSIGN_TO_EDGE);
 
             Dashboard savedDashboard = checkNotNull(dashboardService.assignDashboardToEdge(getCurrentUser().getTenantId(), dashboardId, edgeId));
 
@@ -688,7 +678,7 @@ public class DashboardController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/edge/{edgeId}/dashboard/{dashboardId}", method = RequestMethod.DELETE)
     @ResponseBody
     public Dashboard unassignDashboardFromEdge(@PathVariable("edgeId") String strEdgeId,
@@ -699,7 +689,7 @@ public class DashboardController extends BaseController {
             EdgeId edgeId = new EdgeId(toUUID(strEdgeId));
             Edge edge = checkEdgeId(edgeId, Operation.READ);
             DashboardId dashboardId = new DashboardId(toUUID(strDashboardId));
-            Dashboard dashboard = checkDashboardId(dashboardId, Operation.READ);
+            Dashboard dashboard = checkDashboardId(dashboardId, Operation.UNASSIGN_FROM_EDGE);
 
             Dashboard savedDashboard = checkNotNull(dashboardService.unassignDashboardFromEdge(getCurrentUser().getTenantId(), dashboardId, edgeId));
 
@@ -720,7 +710,7 @@ public class DashboardController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/edge/{edgeId}/dashboards", params = {"pageSize", "page"}, method = RequestMethod.GET)
     @ResponseBody
     public PageData<DashboardInfo> getEdgeDashboards(

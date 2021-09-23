@@ -149,8 +149,7 @@ export class EntitiesHierarchyWidgetComponent extends PageComponent implements O
           entityType: EntityType.DEVICE,
           id: '123'
         },
-        name: 'TEST DEV1',
-        label: ''
+        name: 'TEST DEV1'
       },
       data: {},
       level: 2
@@ -290,7 +289,7 @@ export class EntitiesHierarchyWidgetComponent extends PageComponent implements O
         const descriptors = this.ctx.actionsApi.getActionDescriptors('nodeSelected');
         if (descriptors.length) {
           const entity = selectedNode.data.nodeCtx.entity;
-          this.ctx.actionsApi.handleWidgetAction(event, descriptors[0], entity.id, entity.name,{ nodeCtx: selectedNode.data.nodeCtx }, entity.label);
+          this.ctx.actionsApi.handleWidgetAction(event, descriptors[0], entity.id, entity.name, { nodeCtx: selectedNode.data.nodeCtx });
         }
       }
     }

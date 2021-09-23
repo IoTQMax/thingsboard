@@ -66,7 +66,7 @@ public abstract class AbstractCoapClaimDeviceTest extends AbstractCoapIntegratio
         user.setAuthority(Authority.CUSTOMER_USER);
         user.setTenantId(savedTenant.getId());
         user.setCustomerId(savedCustomer.getId());
-        user.setEmail("customer@thingsboard.org");
+        user.setEmail("customer@effi.ai");
 
         customerAdmin = createUser(user, CUSTOMER_USER_PASSWORD);
         assertNotNull(customerAdmin);
@@ -90,7 +90,7 @@ public abstract class AbstractCoapClaimDeviceTest extends AbstractCoapIntegratio
 
     protected void processTestClaimingDevice(boolean emptyPayload) throws Exception {
         log.warn("[testClaimingDevice] Device: {}, Transport type: {}", savedDevice.getName(), savedDevice.getType());
-        client = getCoapClient(FeatureType.CLAIM);
+        CoapClient client = getCoapClient(FeatureType.CLAIM);
         byte[] payloadBytes;
         byte[] failurePayloadBytes;
         if (emptyPayload) {
@@ -116,8 +116,8 @@ public abstract class AbstractCoapClaimDeviceTest extends AbstractCoapIntegratio
 
         ClaimResponse claimResponse = doExecuteWithRetriesAndInterval(
                 () -> doPostClaimAsync("/api/customer/device/" + savedDevice.getName() + "/claim", claimRequest, ClaimResponse.class, status().isBadRequest()),
-                100,
-                200
+                20,
+                100
         );
 
         assertEquals(claimResponse, ClaimResponse.FAILURE);
@@ -126,8 +126,8 @@ public abstract class AbstractCoapClaimDeviceTest extends AbstractCoapIntegratio
 
         ClaimResult claimResult = doExecuteWithRetriesAndInterval(
                 () -> doPostClaimAsync("/api/customer/device/" + savedDevice.getName() + "/claim", claimRequest, ClaimResult.class, status().isOk()),
-                100,
-                200
+                20,
+                100
         );
         assertEquals(claimResult.getResponse(), ClaimResponse.SUCCESS);
         Device claimedDevice = claimResult.getDevice();

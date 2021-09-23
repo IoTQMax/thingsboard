@@ -18,8 +18,6 @@ package org.thingsboard.server.common.data;
 import lombok.extern.slf4j.Slf4j;
 import org.thingsboard.server.common.data.edge.EdgeEventType;
 
-import java.util.concurrent.ThreadLocalRandom;
-
 @Slf4j
 public final class EdgeUtils {
 
@@ -58,9 +56,5 @@ public final class EdgeUtils {
                 log.warn("Unsupported entity type [{}]", entityType);
                 return null;
         }
-    }
-
-    public static int nextPositiveInt() {
-        return ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE);
     }
 }

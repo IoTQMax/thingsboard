@@ -15,29 +15,28 @@
  */
 package org.thingsboard.server.transport.lwm2m.server.store;
 
-import org.nustaq.serialization.FSTConfiguration;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.thingsboard.common.util.JacksonUtil;
 import org.thingsboard.server.transport.lwm2m.secure.TbX509DtlsSessionInfo;
 
 public class TbLwM2MDtlsSessionRedisStore implements TbLwM2MDtlsSessionStore {
 
     private static final String SESSION_EP = "SESSION#EP#";
-    private final RedisConnectionFactory connectionFactory;
-    private final FSTConfiguration serializer;
+    RedisConnectionFactory connectionFactory;
 
     public TbLwM2MDtlsSessionRedisStore(RedisConnectionFactory redisConnectionFactory) {
         this.connectionFactory = redisConnectionFactory;
-        this.serializer = FSTConfiguration.createDefaultConfiguration();
     }
 
     @Override
     public void put(String endpoint, TbX509DtlsSessionInfo msg) {
         try (var c = connectionFactory.getConnection()) {
-            var serializedMsg = serializer.asByteArray(msg);
-            if (serializedMsg != null) {
-                c.set(getKey(endpoint), serializedMsg);
+            var msgJson = JacksonUtil.convertValue(msg, JsonNode.class);
+            if (msgJson != null) {
+                c.set(getKey(endpoint), msgJson.toString().getBytes());
             } else {
-                throw new RuntimeException("Problem with serialization of message: " + msg);
+                throw new RuntimeException("Problem with serialization of message: " + msg.toString());
             }
         }
     }
@@ -47,7 +46,7 @@ public class TbLwM2MDtlsSessionRedisStore implements TbLwM2MDtlsSessionStore {
         try (var c = connectionFactory.getConnection()) {
             var data = c.get(getKey(endpoint));
             if (data != null) {
-                return (TbX509DtlsSessionInfo) serializer.asObject(data);
+                return JacksonUtil.fromString(new String(data), TbX509DtlsSessionInfo.class);
             } else {
                 return null;
             }

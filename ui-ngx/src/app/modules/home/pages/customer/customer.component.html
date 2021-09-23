@@ -74,6 +74,22 @@
           {{ 'customer.title-required' | translate }}
         </mat-error>
       </mat-form-field>
+<!--THERA BEGIN    IF INSTALLER O INTEGRATOR agregar disabled:  -->  
+     <fieldset [fxShow]="!isPublic" [disabled]="!(authUser.authority === authorities.TENANT_ADMIN || authUser.authority === authorities.CUSTOMER_USER)">
+        <tb-entity-autocomplete required 
+          formControlName="integratorId"
+          labelText="customer.integrator-id"
+          [entityType]="entityType.USER">
+        </tb-entity-autocomplete>
+      </fieldset>
+      <fieldset [fxShow]="!isPublic" [disabled]="(authUser.authority === authorities.TENANT_INSTALL)">
+        <tb-entity-autocomplete required
+          formControlName="installerId"
+          labelText="customer.installer-id"
+          [entityType]="entityType.USER">
+        </tb-entity-autocomplete>
+      </fieldset>
+<!--THERA END-->      
       <div formGroupName="additionalInfo" fxLayout="column">
         <mat-form-field class="mat-block">
           <mat-label translate>customer.description</mat-label>

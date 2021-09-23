@@ -75,8 +75,6 @@ public class EntityIdFactory {
                 return new OtaPackageId(uuid);
             case EDGE:
                 return new EdgeId(uuid);
-            case RPC:
-                return new RpcId(uuid);
         }
         throw new IllegalArgumentException("EntityType " + type + " is not supported!");
     }

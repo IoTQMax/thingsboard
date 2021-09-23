@@ -45,7 +45,7 @@
           (click)="onEntityAction($event, 'loginAsUser')"
           *ngIf="loginAsUserEnabled$ | async"
           [fxShow]="!isEdit">
-    {{ (entity?.authority === authority.TENANT_ADMIN ? 'user.login-as-tenant-admin' : 'user.login-as-customer-user') | translate }}
+    {{ (entity?.authority === authority.TENANT_ADMIN || entity?.authority === authority.TENANT_INSTALL || entity?.authority === authority.TENANT_INTEGRA ? 'user.login-as-tenant-admin' : 'user.login-as-customer-user') | translate }}
   </button>
   <button mat-raised-button color="primary"
           [disabled]="(isLoading$ | async)"
@@ -53,17 +53,6 @@
           [fxShow]="!hideDelete() && !isEdit">
     {{'user.delete' | translate }}
   </button>
-  <div fxLayout="row" fxLayout.xs="column">
-    <button mat-raised-button
-            ngxClipboard
-            (cbOnSuccess)="onUserIdCopied($event)"
-            [cbContent]="entity?.id?.id"
-            [disabled]="(isLoading$ | async)"
-            [fxShow]="!isEdit">
-      <mat-icon svgIcon="mdi:clipboard-arrow-left"></mat-icon>
-      <span translate>user.copyId</span>
-    </button>
-  </div>
 </div>
 <div class="mat-padding" fxLayout="column">
   <form [formGroup]="entityForm">
@@ -97,7 +86,7 @@
               fxFlex
               placeholder="{{ 'user.default-dashboard' | translate }}"
               formControlName="defaultDashboardId"
-              [dashboardsScope]="entity?.authority === authority.TENANT_ADMIN ? 'tenant' : 'customer'"
+              [dashboardsScope]="entity?.authority === authority.TENANT_ADMIN || entity?.authority === authority.TENANT_INSTALL || entity?.authority === authority.TENANT_INTEGRA ? 'tenant' : 'customer'"              
               [tenantId]="entity?.tenantId?.id"
               [customerId]="entity?.customerId?.id"
               [selectFirstDashboard]="false"
@@ -111,7 +100,7 @@
               fxFlex
               placeholder="{{ 'dashboard.home-dashboard' | translate }}"
               formControlName="homeDashboardId"
-              [dashboardsScope]="entity?.authority === authority.TENANT_ADMIN ? 'tenant' : 'customer'"
+              [dashboardsScope]="entity?.authority === authority.TENANT_ADMIN || entity?.authority === authority.TENANT_INSTALL || entity?.authority === authority.TENANT_INTEGRA ? 'tenant' : 'customer'"
               [tenantId]="entity?.tenantId?.id"
               [customerId]="entity?.customerId?.id"
               [selectFirstDashboard]="false"

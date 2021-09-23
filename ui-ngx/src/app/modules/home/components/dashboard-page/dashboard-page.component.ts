@@ -121,6 +121,7 @@ import {
   DisplayWidgetTypesPanelData
 } from '@home/components/dashboard-page/widget-types-panel.component';
 import { DashboardWidgetSelectComponent } from '@home/components/dashboard-page/dashboard-widget-select.component';
+import { AliasEntityType, EntityType } from '@shared/models/entity-type.models';
 import { MobileService } from '@core/services/mobile.service';
 
 import {
@@ -191,6 +192,8 @@ export class DashboardPageComponent extends PageComponent implements IDashboardC
   isToolbarOpened = false;
   isToolbarOpenedAnimate = false;
   isRightLayoutOpened = false;
+
+  allowedEntityTypes: Array<EntityType | AliasEntityType> = null;
 
   editingWidget: Widget = null;
   editingWidgetLayout: WidgetLayout = null;
@@ -382,7 +385,7 @@ export class DashboardPageComponent extends PageComponent implements IDashboardC
       this.currentCustomerId = this.route.snapshot.params.customerId;
       this.currentDashboardScope = 'customer';
     } else {
-      this.currentDashboardScope = this.authUser.authority === Authority.TENANT_ADMIN ? 'tenant' : 'customer';
+      this.currentDashboardScope = this.authUser.authority === Authority.TENANT_ADMIN || this.authUser.authority === Authority.TENANT_INSTALL || this.authUser.authority === Authority.TENANT_INTEGRA? 'tenant' : 'customer'; //THERA
       this.currentCustomerId = this.authUser.customerId;
     }
 
@@ -406,6 +409,8 @@ export class DashboardPageComponent extends PageComponent implements IDashboardC
       };
       this.window.parent.postMessage(JSON.stringify(message), '*');
     }
+
+    this.allowedEntityTypes = this.entityService.prepareAllowedEntityTypesList(null, true);
   }
 
   private reset() {
@@ -628,7 +633,7 @@ export class DashboardPageComponent extends PageComponent implements IDashboardC
   }
 
   public isTenantAdmin(): boolean {
-    return this.authUser.authority === Authority.TENANT_ADMIN;
+    return this.authUser.authority === Authority.TENANT_ADMIN || this.authUser.authority === Authority.TENANT_INSTALL || this.authUser.authority === Authority.TENANT_INTEGRA; //THERA
   }
 
   public isSystemAdmin(): boolean {
@@ -653,7 +658,8 @@ export class DashboardPageComponent extends PageComponent implements IDashboardC
       data: {
         entityAliases: deepClone(this.dashboard.configuration.entityAliases),
         widgets: this.dashboardUtils.getWidgetsArray(this.dashboard),
-        isSingleEntityAlias: false
+        isSingleEntityAlias: false,
+        allowedEntityTypes: this.allowedEntityTypes
       }
     }).afterClosed().subscribe((entityAliases) => {
       if (entityAliases) {
@@ -786,7 +792,9 @@ export class DashboardPageComponent extends PageComponent implements IDashboardC
   public currentDashboardIdChanged(dashboardId: string) {
     if (!this.widgetEditMode) {
       this.dashboardCtx.stateController.cleanupPreservedStates();
-      if (this.currentDashboardScope === 'customer' && this.authUser.authority === Authority.TENANT_ADMIN) {
+      if (this.currentDashboardScope === 'customer' && (this.authUser.authority === Authority.TENANT_ADMIN ||
+        this.authUser.authority === Authority.TENANT_INSTALL ||
+        this.authUser.authority === Authority.TENANT_INTEGRA)) { //THERA
         this.router.navigateByUrl(`customers/${this.currentCustomerId}/dashboards/${dashboardId}`);
       } else {
         if (this.singlePageMode) {
@@ -1292,7 +1300,6 @@ export class DashboardPageComponent extends PageComponent implements IDashboardC
           types: widgetTypesList,
           typesUpdated: (newTypes) => {
             this.filterWidgetTypes = newTypes.filter(type => type.display).map(type => type.type);
-            this.cd.markForCheck();
           }
         } as DisplayWidgetTypesPanelData
       },
@@ -1303,7 +1310,7 @@ export class DashboardPageComponent extends PageComponent implements IDashboardC
     ];
     const injector = Injector.create({parent: this.viewContainerRef.injector, providers});
     overlayRef.attach(new ComponentPortal(DisplayWidgetTypesPanelComponent, this.viewContainerRef, injector));
-    this.cd.markForCheck();
+    this.cd.detectChanges();
   }
 
   onCloseSearchBundle() {

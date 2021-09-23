@@ -20,6 +20,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.TenantId;
+
+import org.thingsboard.server.common.data.id.UserId; //THERA
+//import org.thingsboard.server.common.data.id.InstallerId; //THERA
+
 import org.thingsboard.server.common.data.validation.NoXss;
 
 public class Customer extends ContactBased<CustomerId> implements HasTenantId {
@@ -29,6 +33,8 @@ public class Customer extends ContactBased<CustomerId> implements HasTenantId {
     @NoXss
     private String title;
     private TenantId tenantId;
+    private UserId integratorId; //THERA
+    private UserId installerId; //THERA
 
     public Customer() {
         super();
@@ -41,6 +47,10 @@ public class Customer extends ContactBased<CustomerId> implements HasTenantId {
     public Customer(Customer customer) {
         super(customer);
         this.tenantId = customer.getTenantId();
+
+        this.integratorId = customer.getIntegratorId();  //THERA
+        this.installerId = customer.getInstallerId();    //THERA
+
         this.title = customer.getTitle();
     }
 
@@ -52,6 +62,24 @@ public class Customer extends ContactBased<CustomerId> implements HasTenantId {
         this.tenantId = tenantId;
     }
     
+/* INSTALLER & INTEGRATOR -THERA- START*/
+    public UserId getIntegratorId() {
+        return integratorId;
+    }
+
+    public void setIntegratorId(UserId integratorId) {
+        this.integratorId = integratorId;
+    }
+
+    public UserId getInstallerId() {
+        return installerId;
+    }
+
+    public void setInstallerId(UserId installerId) {
+        this.installerId = installerId;
+    }
+/* INSTALLER & INTEGRATOR -THERA- END*/
+
     public String getTitle() {
         return title;
     }
@@ -123,6 +151,12 @@ public class Customer extends ContactBased<CustomerId> implements HasTenantId {
         builder.append(title);
         builder.append(", tenantId=");
         builder.append(tenantId);
+        
+        builder.append(", integratorId="); //THERA
+        builder.append(integratorId);      //THERA
+        builder.append(", installerId=");  //THERA
+        builder.append(installerId);       //THERA
+
         builder.append(", additionalInfo=");
         builder.append(getAdditionalInfo());
         builder.append(", country=");

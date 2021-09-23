@@ -65,7 +65,7 @@ const routes: Routes = [
       breadcrumb: {
         skip: true
       },
-      auth: [Authority.TENANT_ADMIN, Authority.CUSTOMER_USER],
+      auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA, Authority.CUSTOMER_USER], //THERA
       title: 'dashboard.dashboard',
       widgetEditMode: false,
       singlePageMode: true
@@ -81,7 +81,7 @@ const routes: Routes = [
       breadcrumb: {
         skip: true
       },
-      auth: [Authority.SYS_ADMIN, Authority.TENANT_ADMIN],
+      auth: [Authority.SYS_ADMIN, Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
       title: 'widget.editor',
       widgetEditMode: true,
       singlePageMode: true

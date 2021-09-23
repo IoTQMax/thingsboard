@@ -18,11 +18,9 @@ package org.thingsboard.server.dao.device.claim;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.io.Serializable;
-
 @AllArgsConstructor
 @Data
-public class ClaimData implements Serializable {
+public class ClaimData {
 
     private final String secretKey;
     private final long expirationTime;

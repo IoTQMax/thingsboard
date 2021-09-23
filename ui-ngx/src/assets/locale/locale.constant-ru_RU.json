@@ -487,8 +487,8 @@
         "make-private-dashboard-title": "Вы точно хотите закрыть общий доступ к дашборду '{{dashboardTitle}}'?",
         "make-private-dashboard-text": "После подтверждения дашборд будет закрыт для общего доступа.",
         "make-private-dashboard": "Закрыть дашборд для общего доступа",
-        "socialshare-text": "'{{dashboardTitle}}' сделано ThingsBoard",
-        "socialshare-title": "'{{dashboardTitle}}' сделано ThingsBoard",
+        "socialshare-text": "'{{dashboardTitle}}' сделано Effi.ai",
+        "socialshare-title": "'{{dashboardTitle}}' сделано Effi.ai",
         "select-dashboard": "Выберите дашборд",
         "no-dashboards-matching": "Дашборд '{{entity}}' не найден.",
         "dashboard-required": "Дашборд обязателен.",
@@ -677,7 +677,7 @@
         "credentials-type": "Тип учетных данных",
         "access-token": "Токен",
         "access-token-required": "Токен обязателен.",
-        "access-token-invalid": "Длина токена должна быть от 1 до 32 символов.",
+        "access-token-invalid": "Длина токена должна быть от 1 до 20 символов.",
         "rsa-key": "Открытый ключ RSA",
         "rsa-key-required": "Открытый ключ RSA обязателен.",
         "secret": "Секрет",
@@ -1510,9 +1510,7 @@
         "disable-account": "Отключить учетную запись пользователя",
         "enable-account": "Включить учетную запись пользователя",
         "enable-account-message": "Учетная запись пользователя была успешно включена!",
-        "disable-account-message": "Учетная запись пользователя была успешно отключена!",
-        "copyId": "Копировать ИД пользователя",
-        "idCopiedMessage": "ИД пользователя скопирован в буфер обмена"
+        "disable-account-message": "Учетная запись пользователя была успешно отключена!"
     },
     "value": {
         "type": "Тип значения",

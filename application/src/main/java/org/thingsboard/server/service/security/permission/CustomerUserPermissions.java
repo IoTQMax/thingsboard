@@ -41,7 +41,6 @@ public class CustomerUserPermissions extends AbstractPermissions {
         put(Resource.WIDGETS_BUNDLE, widgetsPermissionChecker);
         put(Resource.WIDGET_TYPE, widgetsPermissionChecker);
         put(Resource.EDGE, customerEntityPermissionChecker);
-        put(Resource.RPC, rpcPermissionChecker);
     }
 
     private static final PermissionChecker customerEntityPermissionChecker =
@@ -138,23 +137,5 @@ public class CustomerUserPermissions extends AbstractPermissions {
             return true;
         }
 
-    };
-
-    private static final PermissionChecker rpcPermissionChecker = new PermissionChecker.GenericPermissionChecker(Operation.READ) {
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public boolean hasPermission(SecurityUser user, Operation operation, EntityId entityId, HasTenantId entity) {
-            if (!super.hasPermission(user, operation, entityId, entity)) {
-                return false;
-            }
-            if (entity.getTenantId() == null || entity.getTenantId().isNullUid()) {
-                return true;
-            }
-            if (!user.getTenantId().equals(entity.getTenantId())) {
-                return false;
-            }
-            return true;
-        }
     };
 }

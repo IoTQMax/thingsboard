@@ -18,7 +18,6 @@ package org.thingsboard.rule.engine.api;
 import io.netty.channel.EventLoopGroup;
 import org.thingsboard.common.util.ListeningExecutor;
 import org.thingsboard.rule.engine.api.sms.SmsSenderFactory;
-import org.thingsboard.server.cluster.TbClusterService;
 import org.thingsboard.server.common.data.Customer;
 import org.thingsboard.server.common.data.Device;
 import org.thingsboard.server.common.data.DeviceProfile;
@@ -189,8 +188,6 @@ public interface TbContext {
 
     DeviceService getDeviceService();
 
-    TbClusterService getClusterService();
-
     DashboardService getDashboardService();
 
     RuleEngineAlarmService getAlarmService();
@@ -217,6 +214,12 @@ public interface TbContext {
 
     EdgeEventService getEdgeEventService();
 
+    /**
+     * Js script executors call are completely asynchronous
+     * */
+    @Deprecated
+    ListeningExecutor getJsExecutor();
+
     ListeningExecutor getMailExecutor();
 
     ListeningExecutor getSmsExecutor();
@@ -225,7 +228,7 @@ public interface TbContext {
 
     ListeningExecutor getExternalCallExecutor();
 
-    MailService getMailService(boolean isSystem);
+    MailService getMailService();
 
     SmsService getSmsService();
 

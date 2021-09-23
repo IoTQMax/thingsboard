@@ -25,7 +25,7 @@ const routes: Routes = [
     path: 'otaUpdates',
     component: EntitiesTableComponent,
     data: {
-      auth: [Authority.TENANT_ADMIN],
+      auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
       title: 'ota-update.ota-updates',
       breadcrumb: {
         label: 'ota-update.ota-updates',

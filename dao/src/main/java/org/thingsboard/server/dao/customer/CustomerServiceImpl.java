@@ -27,6 +27,11 @@ import org.thingsboard.server.common.data.Customer;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.Tenant;
 import org.thingsboard.server.common.data.id.CustomerId;
+
+import org.thingsboard.server.common.data.id.UserId; //THERA
+//import org.thingsboard.server.common.data.id.InstallerId;  //THERA
+import org.thingsboard.server.common.data.security.Authority; //THERA
+
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.PageData;
 import org.thingsboard.server.common.data.page.PageLink;
@@ -163,6 +168,16 @@ public class CustomerServiceImpl extends AbstractEntityService implements Custom
         Validator.validatePageLink(pageLink);
         return customerDao.findCustomersByTenantId(tenantId.getId(), pageLink);
     }
+
+//THERA BEGIN
+    @Override
+    public PageData<Customer> findCustomersByTenantIdUser(Authority authority, UserId userId, TenantId tenantId, PageLink pageLink) {
+        log.trace("Executing findCustomersByTenantIdUser, User Id [{}], tenantId [{}], pageLink [{}]", userId, tenantId, pageLink);
+        Validator.validateId(tenantId, "Incorrect tenantId " + tenantId);
+        Validator.validatePageLink(pageLink);
+        return customerDao.findCustomersByTenantIdUser(authority, userId.getId(), tenantId.getId(), pageLink);
+    }
+//THERA END
 
     @Override
     public void deleteCustomersByTenantId(TenantId tenantId) {

@@ -50,7 +50,9 @@ export class SaveWidgetTypeAsDialogComponent extends
     super(store, router, dialogRef);
 
     const authUser = getCurrentAuthUser(store);
-    if (authUser.authority === Authority.TENANT_ADMIN) {
+    if (authUser.authority === Authority.TENANT_ADMIN ||
+          authUser.authority === Authority.TENANT_INSTALL ||
+          authUser.authority === Authority.TENANT_INTEGRA) { //THERA
       this.bundlesScope = 'tenant';
     } else {
       this.bundlesScope = 'system';

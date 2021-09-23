@@ -73,7 +73,7 @@ export class LedLightComponent implements OnInit, AfterViewInit, OnChanges {
     for (const propName of Object.keys(changes)) {
       const change = changes[propName];
       if (!change.firstChange && change.currentValue !== change.previousValue) {
-        if (propName === 'enabled' && this.circleElement) {
+        if (propName === 'enabled') {
           this.draw();
         } else if (propName === 'size') {
           this.update();

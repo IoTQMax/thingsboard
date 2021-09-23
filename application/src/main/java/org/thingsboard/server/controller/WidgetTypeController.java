@@ -48,7 +48,7 @@ import java.util.List;
 @RequestMapping("/api")
 public class WidgetTypeController extends BaseController {
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/widgetType/{widgetTypeId}", method = RequestMethod.GET)
     @ResponseBody
     public WidgetTypeDetails getWidgetTypeById(@PathVariable("widgetTypeId") String strWidgetTypeId) throws ThingsboardException {
@@ -61,7 +61,7 @@ public class WidgetTypeController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/widgetType", method = RequestMethod.POST)
     @ResponseBody
     public WidgetTypeDetails saveWidgetType(@RequestBody WidgetTypeDetails widgetTypeDetails) throws ThingsboardException {
@@ -84,7 +84,7 @@ public class WidgetTypeController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/widgetType/{widgetTypeId}", method = RequestMethod.DELETE)
     @ResponseStatus(value = HttpStatus.OK)
     public void deleteWidgetType(@PathVariable("widgetTypeId") String strWidgetTypeId) throws ThingsboardException {
@@ -101,7 +101,7 @@ public class WidgetTypeController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/widgetTypes", params = {"isSystem", "bundleAlias"}, method = RequestMethod.GET)
     @ResponseBody
     public List<WidgetType> getBundleWidgetTypes(
@@ -120,7 +120,7 @@ public class WidgetTypeController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/widgetTypesDetails", params = {"isSystem", "bundleAlias"}, method = RequestMethod.GET)
     @ResponseBody
     public List<WidgetTypeDetails> getBundleWidgetTypesDetails(
@@ -139,7 +139,7 @@ public class WidgetTypeController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/widgetTypesInfos", params = {"isSystem", "bundleAlias"}, method = RequestMethod.GET)
     @ResponseBody
     public List<WidgetTypeInfo> getBundleWidgetTypesInfos(
@@ -158,7 +158,7 @@ public class WidgetTypeController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/widgetType", params = {"isSystem", "bundleAlias", "alias"}, method = RequestMethod.GET)
     @ResponseBody
     public WidgetType getWidgetType(

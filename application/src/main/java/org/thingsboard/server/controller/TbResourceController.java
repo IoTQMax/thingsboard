@@ -53,7 +53,7 @@ public class TbResourceController extends BaseController {
 
     public static final String RESOURCE_ID = "resourceId";
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/resource/{resourceId}/download", method = RequestMethod.GET)
     @ResponseBody
     public ResponseEntity<org.springframework.core.io.Resource> downloadResource(@PathVariable(RESOURCE_ID) String strResourceId) throws ThingsboardException {
@@ -74,7 +74,7 @@ public class TbResourceController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/resource/info/{resourceId}", method = RequestMethod.GET)
     @ResponseBody
     public TbResourceInfo getResourceInfoById(@PathVariable(RESOURCE_ID) String strResourceId) throws ThingsboardException {
@@ -87,7 +87,7 @@ public class TbResourceController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/resource/{resourceId}", method = RequestMethod.GET)
     @ResponseBody
     public TbResource getResourceById(@PathVariable(RESOURCE_ID) String strResourceId) throws ThingsboardException {
@@ -100,7 +100,7 @@ public class TbResourceController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/resource", method = RequestMethod.POST)
     @ResponseBody
     public TbResource saveResource(@RequestBody TbResource resource) throws ThingsboardException {
@@ -120,7 +120,7 @@ public class TbResourceController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/resource", method = RequestMethod.GET)
     @ResponseBody
     public PageData<TbResourceInfo> getResources(@RequestParam int pageSize,
@@ -140,7 +140,7 @@ public class TbResourceController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/resource/lwm2m/page", method = RequestMethod.GET)
     @ResponseBody
     public List<LwM2mObject> getLwm2mListObjectsPage(@RequestParam int pageSize,
@@ -156,7 +156,7 @@ public class TbResourceController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/resource/lwm2m", method = RequestMethod.GET)
     @ResponseBody
     public List<LwM2mObject> getLwm2mListObjects(@RequestParam String sortOrder,
@@ -169,7 +169,7 @@ public class TbResourceController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/resource/{resourceId}", method = RequestMethod.DELETE)
     @ResponseBody
     public void deleteResource(@PathVariable("resourceId") String strResourceId) throws ThingsboardException {

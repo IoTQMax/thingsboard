@@ -42,6 +42,36 @@ export const activationMethodTranslations = new Map<ActivationMethod, string>(
   ]
 );
 
+/* THERA BEGIN */
+
+export enum TenantUserProfile {
+  TENANT_ADMIN = 'TENANT_ADMIN',
+  TENANT_INTEGRA = 'TENANT_INTEGRA',
+  TENANT_INSTALL = 'TENANT_INSTALL'
+}
+
+export enum CustomerUserProfile {
+  CUSTOMER_USER = 'CUSTOMER_USER',
+  CUSTOMER_READO = 'CUSTOMER_READO'
+}
+
+export const tenantuserProfileTranslations = new Map<TenantUserProfile, string>(
+  [
+    [TenantUserProfile.TENANT_ADMIN, 'user.tenant-admin-profile'],
+    [TenantUserProfile.TENANT_INTEGRA, 'user.tenant-integra-profile'],
+    [TenantUserProfile.TENANT_INSTALL, 'user.tenant-install-profile']
+  ]
+);
+
+export const customeruserProfileTranslations = new Map<CustomerUserProfile, string>(
+  [
+    [CustomerUserProfile.CUSTOMER_USER, 'user.customer-user-profile'],
+    [CustomerUserProfile.CUSTOMER_READO, 'user.customer-reado-profile']
+  ]
+);
+
+/* THERA END */
+
 export interface AuthUser {
   sub: string;
   scopes: string[];

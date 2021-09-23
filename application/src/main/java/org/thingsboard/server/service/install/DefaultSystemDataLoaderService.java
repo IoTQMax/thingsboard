@@ -17,18 +17,12 @@ package org.thingsboard.server.service.install;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.thingsboard.common.util.ThingsBoardThreadFactory;
 import org.thingsboard.server.common.data.AdminSettings;
 import org.thingsboard.server.common.data.Customer;
 import org.thingsboard.server.common.data.DataConstants;
@@ -57,7 +51,6 @@ import org.thingsboard.server.common.data.id.DeviceId;
 import org.thingsboard.server.common.data.id.DeviceProfileId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.kv.BaseAttributeKvEntry;
-import org.thingsboard.server.common.data.kv.BasicTsKvEntry;
 import org.thingsboard.server.common.data.kv.BooleanDataEntry;
 import org.thingsboard.server.common.data.kv.DoubleDataEntry;
 import org.thingsboard.server.common.data.kv.LongDataEntry;
@@ -85,19 +78,12 @@ import org.thingsboard.server.dao.rule.RuleChainService;
 import org.thingsboard.server.dao.settings.AdminSettingsService;
 import org.thingsboard.server.dao.tenant.TenantProfileService;
 import org.thingsboard.server.dao.tenant.TenantService;
-import org.thingsboard.server.dao.timeseries.TimeseriesService;
 import org.thingsboard.server.dao.user.UserService;
 import org.thingsboard.server.dao.widget.WidgetsBundleService;
 
-import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.TreeMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Service
 @Profile("install")
@@ -107,7 +93,6 @@ public class DefaultSystemDataLoaderService implements SystemDataLoaderService {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     public static final String CUSTOMER_CRED = "customer";
     public static final String DEFAULT_DEVICE_TYPE = "default";
-    public static final String ACTIVITY_STATE = "active";
 
     @Autowired
     private InstallScripts installScripts;
@@ -148,35 +133,14 @@ public class DefaultSystemDataLoaderService implements SystemDataLoaderService {
     @Autowired
     private RuleChainService ruleChainService;
 
-    @Autowired
-    private TimeseriesService tsService;
-
-    @Value("${state.persistToTelemetry:false}")
-    @Getter
-    private boolean persistActivityToTelemetry;
-
     @Bean
     protected BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    private ExecutorService tsCallBackExecutor;
-
-    @PostConstruct
-    public void initExecutor() {
-        tsCallBackExecutor = Executors.newSingleThreadExecutor(ThingsBoardThreadFactory.forName("sys-loader-ts-callback"));
-    }
-
-    @PreDestroy
-    public void shutdownExecutor() {
-        if (tsCallBackExecutor != null) {
-            tsCallBackExecutor.shutdownNow();
-        }
-    }
-
     @Override
     public void createSysAdmin() {
-        createUser(Authority.SYS_ADMIN, null, null, "sysadmin@thingsboard.org", "sysadmin");
+        createUser(Authority.SYS_ADMIN, null, null, "sysadmin@effi.ai", "sysadmin");
     }
 
     @Override
@@ -241,7 +205,7 @@ public class DefaultSystemDataLoaderService implements SystemDataLoaderService {
         AdminSettings mailSettings = new AdminSettings();
         mailSettings.setKey("mail");
         node = objectMapper.createObjectNode();
-        node.put("mailFrom", "ThingsBoard <sysadmin@localhost.localdomain>");
+        node.put("mailFrom", "QMAX Effi.AI <sysadmin@localhost.localdomain>");
         node.put("smtpProtocol", "smtp");
         node.put("smtpHost", "localhost");
         node.put("smtpPort", "25");
@@ -251,7 +215,6 @@ public class DefaultSystemDataLoaderService implements SystemDataLoaderService {
         node.put("password", "");
         node.put("tlsVersion", "TLSv1.2");//NOSONAR, key used to identify password field (not password value itself)
         node.put("enableProxy", false);
-        node.put("showChangePassword", false);
         mailSettings.setJsonValue(node);
         adminSettingsService.saveAdminSettings(TenantId.SYS_TENANT_ID, mailSettings);
     }
@@ -268,7 +231,7 @@ public class DefaultSystemDataLoaderService implements SystemDataLoaderService {
         demoTenant.setTitle("Tenant");
         demoTenant = tenantService.saveTenant(demoTenant);
         installScripts.loadDemoRuleChains(demoTenant.getId());
-        createUser(Authority.TENANT_ADMIN, demoTenant.getId(), null, "tenant@thingsboard.org", "tenant");
+        createUser(Authority.TENANT_ADMIN, demoTenant.getId(), null, "tenant@effi.ai", "tenant");
 
         Customer customerA = new Customer();
         customerA.setTenantId(demoTenant.getId());
@@ -282,10 +245,10 @@ public class DefaultSystemDataLoaderService implements SystemDataLoaderService {
         customerC.setTenantId(demoTenant.getId());
         customerC.setTitle("Customer C");
         customerC = customerService.saveCustomer(customerC);
-        createUser(Authority.CUSTOMER_USER, demoTenant.getId(), customerA.getId(), "customer@thingsboard.org", CUSTOMER_CRED);
-        createUser(Authority.CUSTOMER_USER, demoTenant.getId(), customerA.getId(), "customerA@thingsboard.org", CUSTOMER_CRED);
-        createUser(Authority.CUSTOMER_USER, demoTenant.getId(), customerB.getId(), "customerB@thingsboard.org", CUSTOMER_CRED);
-        createUser(Authority.CUSTOMER_USER, demoTenant.getId(), customerC.getId(), "customerC@thingsboard.org", CUSTOMER_CRED);
+        createUser(Authority.CUSTOMER_USER, demoTenant.getId(), customerA.getId(), "customer@effi.ai", CUSTOMER_CRED);
+        createUser(Authority.CUSTOMER_USER, demoTenant.getId(), customerA.getId(), "customerA@effi.ai", CUSTOMER_CRED);
+        createUser(Authority.CUSTOMER_USER, demoTenant.getId(), customerB.getId(), "customerB@effi.ai", CUSTOMER_CRED);
+        createUser(Authority.CUSTOMER_USER, demoTenant.getId(), customerC.getId(), "customerC@effi.ai", CUSTOMER_CRED);
 
         DeviceProfile defaultDeviceProfile = this.deviceProfileService.findOrCreateDeviceProfile(demoTenant.getId(), DEFAULT_DEVICE_TYPE);
 
@@ -517,62 +480,10 @@ public class DefaultSystemDataLoaderService implements SystemDataLoaderService {
             device.setAdditionalInfo(additionalInfo);
         }
         device = deviceService.saveDevice(device);
-        save(device.getId(), ACTIVITY_STATE, false);
         DeviceCredentials deviceCredentials = deviceCredentialsService.findDeviceCredentialsByDeviceId(TenantId.SYS_TENANT_ID, device.getId());
         deviceCredentials.setCredentialsId(accessToken);
         deviceCredentialsService.updateDeviceCredentials(TenantId.SYS_TENANT_ID, deviceCredentials);
         return device;
-    }
-
-    private void save(DeviceId deviceId, String key, boolean value) {
-        if (persistActivityToTelemetry) {
-            ListenableFuture<Integer> saveFuture = tsService.save(
-                    TenantId.SYS_TENANT_ID,
-                    deviceId,
-                    Collections.singletonList(new BasicTsKvEntry(System.currentTimeMillis(), new BooleanDataEntry(key, value))), 0L);
-            addTsCallback(saveFuture, new TelemetrySaveCallback<>(deviceId, key, value));
-        } else {
-            ListenableFuture<List<Void>> saveFuture = attributesService.save(TenantId.SYS_TENANT_ID, deviceId, DataConstants.SERVER_SCOPE,
-                    Collections.singletonList(new BaseAttributeKvEntry(new BooleanDataEntry(key, value)
-                    , System.currentTimeMillis())));
-            addTsCallback(saveFuture, new TelemetrySaveCallback<>(deviceId, key, value));
-        }
-    }
-
-    private static class TelemetrySaveCallback<T> implements FutureCallback<T> {
-        private final DeviceId deviceId;
-        private final String key;
-        private final Object value;
-
-        TelemetrySaveCallback(DeviceId deviceId, String key, Object value) {
-            this.deviceId = deviceId;
-            this.key = key;
-            this.value = value;
-        }
-
-        @Override
-        public void onSuccess(@Nullable T result) {
-            log.trace("[{}] Successfully updated attribute [{}] with value [{}]", deviceId, key, value);
-        }
-
-        @Override
-        public void onFailure(Throwable t) {
-            log.warn("[{}] Failed to update attribute [{}] with value [{}]", deviceId, key, value, t);
-        }
-    }
-
-    private <S> void addTsCallback(ListenableFuture<S> saveFuture, final FutureCallback<S> callback) {
-        Futures.addCallback(saveFuture, new FutureCallback<S>() {
-            @Override
-            public void onSuccess(@Nullable S result) {
-                callback.onSuccess(result);
-            }
-
-            @Override
-            public void onFailure(Throwable t) {
-                callback.onFailure(t);
-            }
-        }, tsCallBackExecutor);
     }
 
 }

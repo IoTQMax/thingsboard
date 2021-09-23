@@ -27,7 +27,6 @@ import org.thingsboard.common.util.JacksonUtil;
 import org.thingsboard.server.common.data.DeviceProfile;
 import org.thingsboard.server.common.data.OtaPackage;
 import org.thingsboard.server.common.data.OtaPackageInfo;
-import org.thingsboard.server.common.data.SaveOtaPackageInfoRequest;
 import org.thingsboard.server.common.data.Tenant;
 import org.thingsboard.server.common.data.User;
 import org.thingsboard.server.common.data.id.DeviceProfileId;
@@ -71,7 +70,7 @@ public abstract class BaseOtaPackageControllerTest extends AbstractControllerTes
         tenantAdmin = new User();
         tenantAdmin.setAuthority(Authority.TENANT_ADMIN);
         tenantAdmin.setTenantId(savedTenant.getId());
-        tenantAdmin.setEmail("tenant2@thingsboard.org");
+        tenantAdmin.setEmail("tenant2@effi.ai");
         tenantAdmin.setFirstName("Joe");
         tenantAdmin.setLastName("Downs");
 
@@ -93,12 +92,11 @@ public abstract class BaseOtaPackageControllerTest extends AbstractControllerTes
 
     @Test
     public void testSaveFirmware() throws Exception {
-        SaveOtaPackageInfoRequest firmwareInfo = new SaveOtaPackageInfoRequest();
+        OtaPackageInfo firmwareInfo = new OtaPackageInfo();
         firmwareInfo.setDeviceProfileId(deviceProfileId);
         firmwareInfo.setType(FIRMWARE);
         firmwareInfo.setTitle(TITLE);
         firmwareInfo.setVersion(VERSION);
-        firmwareInfo.setUsesUrl(false);
 
         OtaPackageInfo savedFirmwareInfo = save(firmwareInfo);
 
@@ -111,7 +109,7 @@ public abstract class BaseOtaPackageControllerTest extends AbstractControllerTes
 
         savedFirmwareInfo.setAdditionalInfo(JacksonUtil.newObjectNode());
 
-        save(new SaveOtaPackageInfoRequest(savedFirmwareInfo, false));
+        save(savedFirmwareInfo);
 
         OtaPackageInfo foundFirmwareInfo = doGet("/api/otaPackage/info/" + savedFirmwareInfo.getId().getId().toString(), OtaPackageInfo.class);
         Assert.assertEquals(foundFirmwareInfo.getTitle(), savedFirmwareInfo.getTitle());
@@ -119,12 +117,11 @@ public abstract class BaseOtaPackageControllerTest extends AbstractControllerTes
 
     @Test
     public void testSaveFirmwareData() throws Exception {
-        SaveOtaPackageInfoRequest firmwareInfo = new SaveOtaPackageInfoRequest();
+        OtaPackageInfo firmwareInfo = new OtaPackageInfo();
         firmwareInfo.setDeviceProfileId(deviceProfileId);
         firmwareInfo.setType(FIRMWARE);
         firmwareInfo.setTitle(TITLE);
         firmwareInfo.setVersion(VERSION);
-        firmwareInfo.setUsesUrl(false);
 
         OtaPackageInfo savedFirmwareInfo = save(firmwareInfo);
 
@@ -137,7 +134,7 @@ public abstract class BaseOtaPackageControllerTest extends AbstractControllerTes
 
         savedFirmwareInfo.setAdditionalInfo(JacksonUtil.newObjectNode());
 
-        save(new SaveOtaPackageInfoRequest(savedFirmwareInfo, false));
+        save(savedFirmwareInfo);
 
         OtaPackageInfo foundFirmwareInfo = doGet("/api/otaPackage/info/" + savedFirmwareInfo.getId().getId().toString(), OtaPackageInfo.class);
         Assert.assertEquals(foundFirmwareInfo.getTitle(), savedFirmwareInfo.getTitle());
@@ -154,31 +151,26 @@ public abstract class BaseOtaPackageControllerTest extends AbstractControllerTes
 
     @Test
     public void testUpdateFirmwareFromDifferentTenant() throws Exception {
-        SaveOtaPackageInfoRequest firmwareInfo = new SaveOtaPackageInfoRequest();
+        OtaPackageInfo firmwareInfo = new OtaPackageInfo();
         firmwareInfo.setDeviceProfileId(deviceProfileId);
         firmwareInfo.setType(FIRMWARE);
         firmwareInfo.setTitle(TITLE);
         firmwareInfo.setVersion(VERSION);
-        firmwareInfo.setUsesUrl(false);
 
         OtaPackageInfo savedFirmwareInfo = save(firmwareInfo);
 
         loginDifferentTenant();
-        doPost("/api/otaPackage",
-                new SaveOtaPackageInfoRequest(savedFirmwareInfo, false),
-                OtaPackageInfo.class,
-                status().isForbidden());
+        doPost("/api/otaPackage", savedFirmwareInfo, OtaPackageInfo.class, status().isForbidden());
         deleteDifferentTenant();
     }
 
     @Test
     public void testFindFirmwareInfoById() throws Exception {
-        SaveOtaPackageInfoRequest firmwareInfo = new SaveOtaPackageInfoRequest();
+        OtaPackageInfo firmwareInfo = new OtaPackageInfo();
         firmwareInfo.setDeviceProfileId(deviceProfileId);
         firmwareInfo.setType(FIRMWARE);
         firmwareInfo.setTitle(TITLE);
         firmwareInfo.setVersion(VERSION);
-        firmwareInfo.setUsesUrl(false);
 
         OtaPackageInfo savedFirmwareInfo = save(firmwareInfo);
 
@@ -189,12 +181,11 @@ public abstract class BaseOtaPackageControllerTest extends AbstractControllerTes
 
     @Test
     public void testFindFirmwareById() throws Exception {
-        SaveOtaPackageInfoRequest firmwareInfo = new SaveOtaPackageInfoRequest();
+        OtaPackageInfo firmwareInfo = new OtaPackageInfo();
         firmwareInfo.setDeviceProfileId(deviceProfileId);
         firmwareInfo.setType(FIRMWARE);
         firmwareInfo.setTitle(TITLE);
         firmwareInfo.setVersion(VERSION);
-        firmwareInfo.setUsesUrl(false);
 
         OtaPackageInfo savedFirmwareInfo = save(firmwareInfo);
 
@@ -210,12 +201,11 @@ public abstract class BaseOtaPackageControllerTest extends AbstractControllerTes
 
     @Test
     public void testDeleteFirmware() throws Exception {
-        SaveOtaPackageInfoRequest firmwareInfo = new SaveOtaPackageInfoRequest();
+        OtaPackageInfo firmwareInfo = new OtaPackageInfo();
         firmwareInfo.setDeviceProfileId(deviceProfileId);
         firmwareInfo.setType(FIRMWARE);
         firmwareInfo.setTitle(TITLE);
         firmwareInfo.setVersion(VERSION);
-        firmwareInfo.setUsesUrl(false);
 
         OtaPackageInfo savedFirmwareInfo = save(firmwareInfo);
 
@@ -230,12 +220,11 @@ public abstract class BaseOtaPackageControllerTest extends AbstractControllerTes
     public void testFindTenantFirmwares() throws Exception {
         List<OtaPackageInfo> otaPackages = new ArrayList<>();
         for (int i = 0; i < 165; i++) {
-            SaveOtaPackageInfoRequest firmwareInfo = new SaveOtaPackageInfoRequest();
+            OtaPackageInfo firmwareInfo = new OtaPackageInfo();
             firmwareInfo.setDeviceProfileId(deviceProfileId);
             firmwareInfo.setType(FIRMWARE);
             firmwareInfo.setTitle(TITLE);
             firmwareInfo.setVersion(VERSION + i);
-            firmwareInfo.setUsesUrl(false);
 
             OtaPackageInfo savedFirmwareInfo = save(firmwareInfo);
 
@@ -274,12 +263,11 @@ public abstract class BaseOtaPackageControllerTest extends AbstractControllerTes
         List<OtaPackageInfo> allOtaPackages = new ArrayList<>();
 
         for (int i = 0; i < 165; i++) {
-            SaveOtaPackageInfoRequest firmwareInfo = new SaveOtaPackageInfoRequest();
+            OtaPackageInfo firmwareInfo = new OtaPackageInfo();
             firmwareInfo.setDeviceProfileId(deviceProfileId);
             firmwareInfo.setType(FIRMWARE);
             firmwareInfo.setTitle(TITLE);
             firmwareInfo.setVersion(VERSION + i);
-            firmwareInfo.setUsesUrl(false);
 
             OtaPackageInfo savedFirmwareInfo = save(firmwareInfo);
 
@@ -328,7 +316,8 @@ public abstract class BaseOtaPackageControllerTest extends AbstractControllerTes
         Assert.assertEquals(allOtaPackages, allLoadedOtaPackages);
     }
 
-    private OtaPackageInfo save(SaveOtaPackageInfoRequest firmwareInfo) throws Exception {
+
+    private OtaPackageInfo save(OtaPackageInfo firmwareInfo) throws Exception {
         return doPost("/api/otaPackage", firmwareInfo, OtaPackageInfo.class);
     }
 

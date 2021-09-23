@@ -25,10 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.thingsboard.common.util.JacksonUtil;
 import org.thingsboard.server.common.data.Customer;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.Tenant;
@@ -52,6 +49,7 @@ import org.thingsboard.server.dao.service.DataValidator;
 import org.thingsboard.server.dao.service.PaginatedRemover;
 import org.thingsboard.server.dao.tenant.TbTenantProfileCache;
 import org.thingsboard.server.dao.tenant.TenantDao;
+import org.thingsboard.common.util.JacksonUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -192,14 +190,15 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
     @Override
     public UserCredentials requestPasswordReset(TenantId tenantId, String email) {
         log.trace("Executing requestPasswordReset email [{}]", email);
+        validateString(email, "Incorrect email " + email);
         DataValidator.validateEmail(email);
-        User user = findUserByEmail(tenantId, email);
+        User user = userDao.findByEmail(tenantId, email);
         if (user == null) {
-            throw new UsernameNotFoundException(String.format("Unable to find user by email [%s]", email));
+            throw new IncorrectParameterException(String.format("Unable to find user by email [%s]", email));
         }
         UserCredentials userCredentials = userCredentialsDao.findByUserId(tenantId, user.getUuidId());
         if (!userCredentials.isEnabled()) {
-            throw new DisabledException(String.format("User credentials not enabled [%s]", email));
+            throw new IncorrectParameterException("Unable to reset password for inactive user");
         }
         userCredentials.setResetToken(RandomStringUtils.randomAlphanumeric(DEFAULT_TOKEN_LENGTH));
         return saveUserCredentials(tenantId, userCredentials);
@@ -366,8 +365,7 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
         JsonNode userPasswordHistoryJson;
         if (additionalInfo.has(USER_PASSWORD_HISTORY)) {
             userPasswordHistoryJson = additionalInfo.get(USER_PASSWORD_HISTORY);
-            userPasswordHistoryMap = JacksonUtil.convertValue(userPasswordHistoryJson, new TypeReference<>() {
-            });
+            userPasswordHistoryMap = JacksonUtil.convertValue(userPasswordHistoryJson, new TypeReference<>(){});
         }
         if (userPasswordHistoryMap != null) {
             userPasswordHistoryMap.put(Long.toString(System.currentTimeMillis()), userCredentials.getPassword());
@@ -432,6 +430,22 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
                                 throw new DataValidationException("Tenant administrator can't be assigned to customer!");
                             }
                             break;
+//THERA BEGIN
+                        case TENANT_INSTALL:
+                            if (tenantId.getId().equals(ModelConstants.NULL_UUID)) {
+                                throw new DataValidationException("Tenant Installer should be assigned to tenant!");
+                            } else if (!customerId.getId().equals(ModelConstants.NULL_UUID)) {
+                                throw new DataValidationException("Tenant Installer can't be assigned to customer!");
+                            }
+                            break;                            
+                        case TENANT_INTEGRA:
+                            if (tenantId.getId().equals(ModelConstants.NULL_UUID)) {
+                                throw new DataValidationException("Tenant Integrator should be assigned to tenant!");
+                            } else if (!customerId.getId().equals(ModelConstants.NULL_UUID)) {
+                                throw new DataValidationException("Tenant Integrator can't be assigned to customer!");
+                            }
+                            break;                            
+//THERA BEGIN
                         case CUSTOMER_USER:
                             if (tenantId.getId().equals(ModelConstants.NULL_UUID)
                                     || customerId.getId().equals(ModelConstants.NULL_UUID)) {

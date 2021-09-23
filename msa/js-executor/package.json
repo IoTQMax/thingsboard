@@ -1,8 +1,8 @@
 {
   "name": "thingsboard-js-executor",
   "private": true,
-  "version": "3.3.2",
-  "description": "ThingsBoard JavaScript Executor Microservice",
+  "version": "3.3.0",
+  "description": "Effi.ai JavaScript Executor Microservice",
   "main": "server.js",
   "bin": "server.js",
   "scripts": {
@@ -39,9 +39,9 @@
     ]
   },
   "devDependencies": {
-    "fs-extra": "^10.0.0",
-    "nodemon": "^2.0.12",
-    "pkg": "^5.3.1"
+    "fs-extra": "^9.0.1",
+    "nodemon": "^2.0.4",
+    "pkg": "^4.4.9"
   },
   "pkg": {
     "assets": [

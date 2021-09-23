@@ -35,7 +35,7 @@ const routes: Routes = [
         path: '',
         component: EntitiesTableComponent,
         data: {
-          auth: [Authority.TENANT_ADMIN],
+          auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
           title: 'device-profile.device-profiles'
         },
         resolve: {

@@ -14,43 +14,46 @@
 /// limitations under the License.
 ///
 
-import { Component, forwardRef, Input, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, forwardRef, Input, Output } from '@angular/core';
 import { ControlValueAccessor, FormBuilder, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { coerceBooleanProperty } from '@angular/cdk/coercion';
-import { isEmpty, isUndefinedOrNull } from '@core/utils';
+import { deepClone, isDefinedAndNotNull, isEmpty } from '@core/utils';
 import { Lwm2mAttributesDialogComponent, Lwm2mAttributesDialogData } from './lwm2m-attributes-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-import { AttributesNameValueMap } from './lwm2m-profile-config.models';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { TranslateService } from '@ngx-translate/core';
+import { ATTRIBUTE_LWM2M_LABEL } from './lwm2m-profile-config.models';
+
 
 @Component({
   selector: 'tb-profile-lwm2m-attributes',
   templateUrl: './lwm2m-attributes.component.html',
-  styleUrls: [],
+  styleUrls: ['./lwm2m-attributes.component.scss'],
   providers: [{
     provide: NG_VALUE_ACCESSOR,
     useExisting: forwardRef(() => Lwm2mAttributesComponent),
     multi: true
   }]
 })
-export class Lwm2mAttributesComponent implements ControlValueAccessor, OnDestroy {
-  attributesFormGroup: FormGroup;
+export class Lwm2mAttributesComponent implements ControlValueAccessor {
+  attributeLwm2mFormGroup: FormGroup;
+  attributeLwm2mLabel = ATTRIBUTE_LWM2M_LABEL;
 
   private requiredValue: boolean;
-  private destroy$ = new Subject();
+
+  @Input()
+  attributeLwm2m: {};
 
   @Input()
   isAttributeTelemetry: boolean;
 
   @Input()
-  modelName: string;
+  destName: string;
 
   @Input()
   disabled: boolean;
 
-  @Input()
-  isResource = false;
+  @Output()
+  updateAttributeLwm2m = new EventEmitter<any>();
 
   @Input()
   set required(value: boolean) {
@@ -61,21 +64,8 @@ export class Lwm2mAttributesComponent implements ControlValueAccessor, OnDestroy
   }
 
   constructor(private dialog: MatDialog,
-              private fb: FormBuilder) {
-    this.attributesFormGroup = this.fb.group({
-      attributes: [{}]
-    });
-    this.attributesFormGroup.get('attributes').valueChanges.pipe(
-      takeUntil(this.destroy$)
-    ).subscribe(attributes => {
-      this.propagateChange(attributes);
-    });
-  }
-
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
+              private fb: FormBuilder,
+              private translate: TranslateService) {}
 
   registerOnChange(fn: any): void {
     this.propagateChange = fn;
@@ -87,67 +77,71 @@ export class Lwm2mAttributesComponent implements ControlValueAccessor, OnDestroy
   setDisabledState(isDisabled: boolean): void {
     this.disabled = isDisabled;
     if (isDisabled) {
-      this.attributesFormGroup.disable({emitEvent: false});
+      this.attributeLwm2mFormGroup.disable({emitEvent: false});
     } else {
-      this.attributesFormGroup.enable({emitEvent: false});
+      this.attributeLwm2mFormGroup.enable({emitEvent: false});
     }
   }
 
-  writeValue(value: AttributesNameValueMap | null) {
-    this.attributesFormGroup.patchValue({attributes: value}, {emitEvent: false});
+  ngOnInit() {
+    this.attributeLwm2mFormGroup = this.fb.group({
+      attributeLwm2m: [this.attributeLwm2m]
+    });
   }
 
-  get attributesValueMap(): AttributesNameValueMap {
-    return this.attributesFormGroup.get('attributes').value;
+  writeValue(value: {} | null): void {}
+
+  attributeLwm2mToString = (): string => {
+    return this.isIconEditAdd () ? this.attributeLwm2mLabelToString() : this.translate.instant('device-profile.lwm2m.no-data');
+  }
+
+  private attributeLwm2mLabelToString = (): string => {
+    let label = JSON.stringify(this.attributeLwm2m);
+    label = deepClone(label.replace('{', ''));
+    label = deepClone(label.replace('}', ''));
+    this.attributeLwm2mLabel.forEach((value: string, key: string) => {
+      const dest = '\"' + key + '\"\:';
+      label = deepClone(label.replace(dest, value));
+    });
+    return label;
   }
 
   isDisableBtn(): boolean {
-    return !this.disabled && this.isAttributeTelemetry;
+    return this.disabled || this.isAttributeTelemetry ? !(isDefinedAndNotNull(this.attributeLwm2m) &&
+      !isEmpty(this.attributeLwm2m) && this.disabled) :  this.disabled;
   }
 
-  isEmpty(): boolean {
-    const value = this.attributesValueMap;
-    return isUndefinedOrNull(value) || isEmpty(value);
+  isIconView(): boolean {
+    return this.isAttributeTelemetry || this.disabled;
   }
 
-  get tooltipSetAttributesTelemetry(): string {
-    return this.isDisableBtn() ? 'device-profile.lwm2m.edit-attributes-select' : '';
+  isIconEditAdd(): boolean {
+    return isDefinedAndNotNull(this.attributeLwm2m) && !isEmpty(this.attributeLwm2m);
   }
 
-  get tooltipButton(): string {
-    if (this.disabled) {
-      return 'device-profile.lwm2m.view-attribute';
-    } else if (this.isEmpty()) {
-      return 'device-profile.lwm2m.add-attribute';
-    }
-    return 'device-profile.lwm2m.edit-attribute';
-  }
-
-  get iconButton(): string {
-    if (this.disabled) {
-      return 'visibility';
-    } else if (this.isEmpty()) {
-      return 'add';
-    }
-    return 'edit';
+  isToolTipLabel(): string {
+    return this.disabled ? this.translate.instant('device-profile.lwm2m.attribute-lwm2m-tip') :
+      this.isAttributeTelemetry ? this.translate.instant('device-profile.lwm2m.attribute-lwm2m-disable-tip') :
+        this.translate.instant('device-profile.lwm2m.attribute-lwm2m-tip');
   }
 
   public editAttributesLwm2m = ($event: Event): void => {
     if ($event) {
       $event.stopPropagation();
     }
-    this.dialog.open<Lwm2mAttributesDialogComponent, Lwm2mAttributesDialogData, AttributesNameValueMap>(Lwm2mAttributesDialogComponent, {
+    this.dialog.open<Lwm2mAttributesDialogComponent, Lwm2mAttributesDialogData, object>(Lwm2mAttributesDialogComponent, {
       disableClose: true,
       panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
       data: {
         readonly: this.disabled,
-        attributes: this.attributesValueMap,
-        modelName: this.modelName,
-        isResource: this.isResource
+        attributeLwm2m: this.disabled ? this.attributeLwm2m : deepClone(this.attributeLwm2m),
+        destName: this.destName
       }
     }).afterClosed().subscribe((result) => {
       if (result) {
-        this.attributesFormGroup.patchValue({attributes: result});
+        this.attributeLwm2m = result;
+        this.attributeLwm2mFormGroup.patchValue({attributeLwm2m: this.attributeLwm2m});
+        this.updateAttributeLwm2m.next(this.attributeLwm2m);
       }
     });
   }

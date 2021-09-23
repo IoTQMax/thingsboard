@@ -30,9 +30,7 @@ import {
   DynamicValueSourceType,
   dynamicValueSourceTypeTranslationMap,
   EntityKeyValueType,
-  FilterPredicateValue,
-  getDynamicSourcesForAllowUser,
-  inheritModeForDynamicValueSourceType
+  FilterPredicateValue
 } from '@shared/models/query/query.models';
 
 @Component({
@@ -54,14 +52,22 @@ import {
 })
 export class FilterPredicateValueComponent implements ControlValueAccessor, Validator, OnInit {
 
-  private readonly inheritModeForSources: DynamicValueSourceType[] = inheritModeForDynamicValueSourceType;
+  private readonly inheritModeForSources: DynamicValueSourceType[] = [
+    DynamicValueSourceType.CURRENT_CUSTOMER,
+    DynamicValueSourceType.CURRENT_DEVICE];
 
   @Input() disabled: boolean;
 
   @Input()
   set allowUserDynamicSource(allow: boolean) {
-    this.dynamicValueSourceTypes = getDynamicSourcesForAllowUser(allow);
+    this.dynamicValueSourceTypes = [DynamicValueSourceType.CURRENT_TENANT,
+      DynamicValueSourceType.CURRENT_CUSTOMER];
     this.allow = allow;
+    if (allow) {
+      this.dynamicValueSourceTypes.push(DynamicValueSourceType.CURRENT_USER);
+    } else {
+      this.dynamicValueSourceTypes.push(DynamicValueSourceType.CURRENT_DEVICE);
+    }
   }
 
   private onlyUserDynamicSourceValue = false;
@@ -86,9 +92,8 @@ export class FilterPredicateValueComponent implements ControlValueAccessor, Vali
 
   valueTypeEnum = EntityKeyValueType;
 
-  allow = true;
-
-  dynamicValueSourceTypes: DynamicValueSourceType[] = getDynamicSourcesForAllowUser(this.allow);
+  dynamicValueSourceTypes: DynamicValueSourceType[] = [DynamicValueSourceType.CURRENT_TENANT,
+    DynamicValueSourceType.CURRENT_CUSTOMER, DynamicValueSourceType.CURRENT_USER];
 
   dynamicValueSourceTypeTranslations = dynamicValueSourceTypeTranslationMap;
 
@@ -97,6 +102,8 @@ export class FilterPredicateValueComponent implements ControlValueAccessor, Vali
   dynamicMode = false;
 
   inheritMode = false;
+
+  allow = true;
 
   private propagateChange = null;
   private propagateChangePending = false;

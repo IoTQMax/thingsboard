@@ -99,13 +99,13 @@ public abstract class AbstractWebTest {
 
     protected static final String TEST_TENANT_NAME = "TEST TENANT";
 
-    protected static final String SYS_ADMIN_EMAIL = "sysadmin@thingsboard.org";
+    protected static final String SYS_ADMIN_EMAIL = "sysadmin@effi.ai";
     private static final String SYS_ADMIN_PASSWORD = "sysadmin";
 
-    protected static final String TENANT_ADMIN_EMAIL = "testtenant@thingsboard.org";
+    protected static final String TENANT_ADMIN_EMAIL = "testtenant@effi.ai";
     private static final String TENANT_ADMIN_PASSWORD = "tenant";
 
-    protected static final String CUSTOMER_USER_EMAIL = "testcustomer@thingsboard.org";
+    protected static final String CUSTOMER_USER_EMAIL = "testcustomer@effi.ai";
     private static final String CUSTOMER_USER_PASSWORD = "customer";
 
     /** See {@link org.springframework.test.web.servlet.DefaultMvcResult#getAsyncResult(long)}
@@ -236,7 +236,7 @@ public abstract class AbstractWebTest {
         User differentTenantAdmin = new User();
         differentTenantAdmin.setAuthority(Authority.TENANT_ADMIN);
         differentTenantAdmin.setTenantId(savedDifferentTenant.getId());
-        differentTenantAdmin.setEmail("different_tenant@thingsboard.org");
+        differentTenantAdmin.setEmail("different_tenant@effi.ai");
 
         createUserAndLogin(differentTenantAdmin, "testPassword");
     }
@@ -352,12 +352,10 @@ public abstract class AbstractWebTest {
         return mqttDeviceProfileTransportConfiguration;
     }
 
-    protected ProtoTransportPayloadConfiguration createProtoTransportPayloadConfiguration(String attributesProtoSchema, String telemetryProtoSchema, String rpcRequestProtoSchema, String rpcResponseProtoSchema) {
+    protected ProtoTransportPayloadConfiguration createProtoTransportPayloadConfiguration(String deviceAttributesProtoSchema, String deviceTelemetryProtoSchema) {
         ProtoTransportPayloadConfiguration protoTransportPayloadConfiguration = new ProtoTransportPayloadConfiguration();
-        protoTransportPayloadConfiguration.setDeviceAttributesProtoSchema(attributesProtoSchema);
-        protoTransportPayloadConfiguration.setDeviceTelemetryProtoSchema(telemetryProtoSchema);
-        protoTransportPayloadConfiguration.setDeviceRpcRequestProtoSchema(rpcRequestProtoSchema);
-        protoTransportPayloadConfiguration.setDeviceRpcResponseProtoSchema(rpcResponseProtoSchema);
+        protoTransportPayloadConfiguration.setDeviceAttributesProtoSchema(deviceAttributesProtoSchema);
+        protoTransportPayloadConfiguration.setDeviceTelemetryProtoSchema(deviceTelemetryProtoSchema);
         return protoTransportPayloadConfiguration;
     }
 

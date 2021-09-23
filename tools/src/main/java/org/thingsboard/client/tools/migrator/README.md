@@ -1,5 +1,5 @@
 # Description:
-This tool used for migrating ThingsBoard into hybrid mode from Postgres.
+This tool used for migrating Effi.ai into hybrid mode from Postgres.
    
 Performance of this tool depends on disk type and instance type (mostly on CPU resources).
 But in general here are few benchmarks:

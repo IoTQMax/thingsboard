@@ -60,7 +60,7 @@ const routes: Routes = [
         path: '',
         component: EntitiesTableComponent,
         data: {
-          auth: [Authority.TENANT_ADMIN, Authority.CUSTOMER_USER],
+          auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA, Authority.CUSTOMER_USER], //THERA
           title: 'dashboard.dashboards',
           dashboardsType: 'tenant'
         },
@@ -76,7 +76,7 @@ const routes: Routes = [
             labelFunction: dashboardBreadcumbLabelFunction,
             icon: 'dashboard'
           } as BreadCrumbConfig<DashboardPageComponent>,
-          auth: [Authority.TENANT_ADMIN, Authority.CUSTOMER_USER],
+          auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA, Authority.CUSTOMER_USER], //THERA
           title: 'dashboard.dashboard',
           widgetEditMode: false
         },

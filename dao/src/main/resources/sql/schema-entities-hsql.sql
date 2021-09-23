@@ -14,9 +14,6 @@
 -- limitations under the License.
 --
 
-SET DATABASE SQL SYNTAX PGS TRUE;
-SET DATABASE TRANSACTION CONTROL MVCC;
-
 CREATE TABLE IF NOT EXISTS admin_settings (
     id uuid NOT NULL CONSTRAINT admin_settings_pkey PRIMARY KEY,
     created_time bigint NOT NULL,
@@ -111,6 +108,8 @@ CREATE TABLE IF NOT EXISTS customer (
     search_text varchar(255),
     state varchar(255),
     tenant_id uuid,
+    integrator_id uuid, --THERA
+    installer_id uuid,  --THERA
     title varchar(255),
     zip varchar(255)
 );
@@ -123,8 +122,6 @@ CREATE TABLE IF NOT EXISTS dashboard (
     search_text varchar(255),
     tenant_id uuid,
     title varchar(255),
-    mobile_hide boolean DEFAULT false,
-    mobile_order int,
     image varchar(1000000)
 );
 
@@ -173,7 +170,6 @@ CREATE TABLE IF NOT EXISTS ota_package (
     type varchar(32) NOT NULL,
     title varchar(255) NOT NULL,
     version varchar(255) NOT NULL,
-    tag varchar(255),
     url varchar(255),
     file_name varchar(255),
     content_type varchar(255),
@@ -572,16 +568,4 @@ CREATE TABLE IF NOT EXISTS edge_event (
     body varchar(10000000),
     tenant_id uuid,
     ts bigint NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS rpc (
-    id uuid NOT NULL CONSTRAINT rpc_pkey PRIMARY KEY,
-    created_time bigint NOT NULL,
-    tenant_id uuid NOT NULL,
-    device_id uuid NOT NULL,
-    expiration_time bigint NOT NULL,
-    request varchar(10000000) NOT NULL,
-    response varchar(10000000),
-    additional_info varchar(10000000),
-    status varchar(255) NOT NULL
 );

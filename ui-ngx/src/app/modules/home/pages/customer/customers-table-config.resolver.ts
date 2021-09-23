@@ -34,6 +34,8 @@ import { CustomerTabsComponent } from '@home/pages/customer/customer-tabs.compon
 import { getCurrentAuthState } from '@core/auth/auth.selectors';
 import { Store } from '@ngrx/store';
 import { AppState } from '@core/core.state';
+import { UserComponent } from '../user/user.component';
+import { UserService } from '@app/core/public-api';
 
 @Injectable()
 export class CustomersTableConfigResolver implements Resolve<EntityTableConfig<Customer>> {
@@ -55,10 +57,18 @@ export class CustomersTableConfigResolver implements Resolve<EntityTableConfig<C
 
     this.config.columns.push(
       new DateEntityTableColumn<Customer>('createdTime', 'common.created-time', this.datePipe, '150px'),
-      new EntityTableColumn<Customer>('title', 'customer.title', '25%'),
-      new EntityTableColumn<Customer>('email', 'contact.email', '25%'),
-      new EntityTableColumn<Customer>('country', 'contact.country', '25%'),
-      new EntityTableColumn<Customer>('city', 'contact.city', '25%')
+      new EntityTableColumn<Customer>('title', 'customer.title', '16%'), //25%
+      new EntityTableColumn<Customer>('email', 'contact.email', '16%'),
+
+      //new EntityTableColumn<Customer>('installerId', 'customer.installerId', '18%'),
+      //new EntityTableColumn<Customer>('integratorId', 'customer.integratorId', '18%'),
+      
+      //                     (entity) => translate.instant(entityTypeTranslations.get(entity.integratorId.entityType).type)), //THERA
+      // new EntityTableColumn<Customer>('installerId', 'customer.integratorId', '18%', (string) => {return 'TEST';} ),   //THERA
+
+      new EntityTableColumn<Customer>('country', 'contact.country', '16%'), 
+      new EntityTableColumn<Customer>('city', 'contact.city', '16%')
+      /* THERA AGREGAR COLUMNAS INSTALADOR / INTEGRADOR*/
     );
     this.config.cellActionDescriptors.push(
       {

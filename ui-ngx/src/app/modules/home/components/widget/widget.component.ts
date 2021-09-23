@@ -284,8 +284,7 @@ export class WidgetComponent extends PageComponent implements OnInit, AfterViewI
       getActionDescriptors: this.getActionDescriptors.bind(this),
       handleWidgetAction: this.handleWidgetAction.bind(this),
       elementClick: this.elementClick.bind(this),
-      getActiveEntityInfo: this.getActiveEntityInfo.bind(this),
-      openDashboardStateInSeparateDialog: this.openDashboardStateInSeparateDialog.bind(this)
+      getActiveEntityInfo: this.getActiveEntityInfo.bind(this)
     };
 
     this.widgetContext.customHeaderActions = [];
@@ -908,8 +907,7 @@ export class WidgetComponent extends PageComponent implements OnInit, AfterViewI
         warnOnPageDataOverflow: this.typeParameters.warnOnPageDataOverflow,
         ignoreDataUpdateOnIntervalTick: this.typeParameters.ignoreDataUpdateOnIntervalTick,
         comparisonEnabled: comparisonSettings.comparisonEnabled,
-        timeForComparison: comparisonSettings.timeForComparison,
-        comparisonCustomIntervalValue: comparisonSettings.comparisonCustomIntervalValue
+        timeForComparison: comparisonSettings.timeForComparison
       };
       if (this.widget.type === widgetType.alarm) {
         options.alarmSource = deepClone(this.widget.config.alarmSource);
@@ -1026,9 +1024,8 @@ export class WidgetComponent extends PageComponent implements OnInit, AfterViewI
         const params = deepClone(this.widgetContext.stateController.getStateParams());
         this.updateEntityParams(params, targetEntityParamName, targetEntityId, entityName, entityLabel);
         if (type === WidgetActionType.openDashboardState) {
-          if (descriptor.openInSeparateDialog && !this.mobileService.isMobileApp()) {
-            this.openDashboardStateInSeparateDialog(descriptor.targetDashboardStateId, params, descriptor.dialogTitle,
-              descriptor.dialogHideDashboardToolbar, descriptor.dialogWidth, descriptor.dialogHeight);
+          if (descriptor.openInSeparateDialog) {
+            this.openDashboardStateInDialog(descriptor, entityId, entityName, additionalParams, entityLabel);
           } else {
             this.widgetContext.stateController.openState(targetDashboardStateId, params, descriptor.openRightLayout);
           }
@@ -1279,15 +1276,22 @@ export class WidgetComponent extends PageComponent implements OnInit, AfterViewI
     }
   }
 
-  private openDashboardStateInSeparateDialog(targetDashboardStateId: string, params?: StateParams, dialogTitle?: string,
-                                             hideDashboardToolbar = true, dialogWidth?: number, dialogHeight?: number) {
+  private openDashboardStateInDialog(descriptor: WidgetActionDescriptor,
+                                     entityId?: EntityId, entityName?: string, additionalParams?: any, entityLabel?: string) {
     const dashboard = deepClone(this.widgetContext.stateController.dashboardCtrl.dashboardCtx.getDashboard());
     const stateObject: StateObject = {};
-    stateObject.params = params;
+    stateObject.params = {};
+    const targetEntityParamName = descriptor.stateEntityParamName;
+    const targetDashboardStateId = descriptor.targetDashboardStateId;
+    let targetEntityId: EntityId;
+    if (descriptor.setEntityId) {
+      targetEntityId = entityId;
+    }
+    this.updateEntityParams(stateObject.params, targetEntityParamName, targetEntityId, entityName, entityLabel);
     if (targetDashboardStateId) {
       stateObject.id = targetDashboardStateId;
     }
-    let title = dialogTitle;
+    let title = descriptor.dialogTitle;
     if (!title) {
       if (targetDashboardStateId && dashboard.configuration.states) {
         const dashboardState = dashboard.configuration.states[targetDashboardStateId];
@@ -1300,6 +1304,7 @@ export class WidgetComponent extends PageComponent implements OnInit, AfterViewI
       title = dashboard.title;
     }
     title = this.utils.customTranslation(title, title);
+    const params = stateObject.params;
     const paramsEntityName = params && params.entityName ? params.entityName : '';
     const paramsEntityLabel = params && params.entityLabel ? params.entityLabel : '';
     title = insertVariable(title, 'entityName', paramsEntityName);
@@ -1319,27 +1324,28 @@ export class WidgetComponent extends PageComponent implements OnInit, AfterViewI
         dashboard,
         state: objToBase64([ stateObject ]),
         title,
-        hideToolbar: hideDashboardToolbar,
-        width: dialogWidth,
-        height: dialogHeight
+        hideToolbar: descriptor.dialogHideDashboardToolbar,
+        width: descriptor.dialogWidth,
+        height: descriptor.dialogHeight
       }
     });
   }
 
   private elementClick($event: Event) {
-    const elementClicked = ($event.target || $event.srcElement) as Element;
-    const descriptors = this.getActionDescriptors('elementClick');
-    if (descriptors.length) {
-      const idsList = descriptors.map(descriptor => `#${descriptor.name}`).join(',');
-      const targetElement = $(elementClicked).closest(idsList, this.widgetContext.$container[0]);
-      if (targetElement.length && targetElement[0].id) {
-        $event.stopPropagation();
-        const descriptor = descriptors.find(descriptorInfo => descriptorInfo.name === targetElement[0].id);
-        const entityInfo = this.getActiveEntityInfo();
-        const entityId = entityInfo ? entityInfo.entityId : null;
-        const entityName = entityInfo ? entityInfo.entityName : null;
-        const entityLabel = entityInfo && entityInfo.entityLabel ? entityInfo.entityLabel : null;
-        this.handleWidgetAction($event, descriptor, entityId, entityName, null, entityLabel);
+    const e = ($event.target || $event.srcElement) as Element;
+    if (e.id) {
+      const descriptors = this.getActionDescriptors('elementClick');
+      if (descriptors.length) {
+        descriptors.forEach((descriptor) => {
+          if (descriptor.name === e.id) {
+            $event.stopPropagation();
+            const entityInfo = this.getActiveEntityInfo();
+            const entityId = entityInfo ? entityInfo.entityId : null;
+            const entityName = entityInfo ? entityInfo.entityName : null;
+            const entityLabel = entityInfo && entityInfo.entityLabel ? entityInfo.entityLabel : null;
+            this.handleWidgetAction($event, descriptor, entityId, entityName, null, entityLabel);
+          }
+        });
       }
     }
   }

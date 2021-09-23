@@ -111,7 +111,7 @@ export class WidgetLibraryComponent extends PageComponent implements OnInit {
     this.authUser = getCurrentAuthUser(this.store);
     this.widgetsBundle = this.route.snapshot.data.widgetsBundle;
     this.widgetsData = this.route.snapshot.data.widgetsData;
-    if (this.authUser.authority === Authority.TENANT_ADMIN) {
+    if (this.authUser.authority === Authority.TENANT_ADMIN || this.authUser.authority === Authority.TENANT_INSTALL || this.authUser.authority === Authority.TENANT_INTEGRA) { //THERA
       this.isReadOnly = !this.widgetsBundle || this.widgetsBundle.tenantId.id === NULL_UUID;
     } else {
       this.isReadOnly = this.authUser.authority !== Authority.SYS_ADMIN;

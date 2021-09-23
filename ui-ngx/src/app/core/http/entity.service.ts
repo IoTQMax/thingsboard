@@ -19,7 +19,7 @@ import { EMPTY, forkJoin, Observable, of, throwError } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { PageLink } from '@shared/models/page/page-link';
 import { AliasEntityType, EntityType } from '@shared/models/entity-type.models';
-import { BaseData, HasId } from '@shared/models/base-data';
+import { BaseData } from '@shared/models/base-data';
 import { EntityId } from '@shared/models/id/entity-id';
 import { DeviceService } from '@core/http/device.service';
 import { TenantService } from '@core/http/tenant.service';
@@ -43,13 +43,7 @@ import { RuleChainService } from '@core/http/rule-chain.service';
 import { AliasInfo, StateParams, SubscriptionInfo } from '@core/api/widget-api.models';
 import { DataKey, Datasource, DatasourceType, KeyInfo } from '@app/shared/models/widget.models';
 import { UtilsService } from '@core/services/utils.service';
-import {
-  AliasFilterType,
-  edgeAliasFilterTypes,
-  EntityAlias,
-  EntityAliasFilter,
-  EntityAliasFilterResult
-} from '@shared/models/alias.models';
+import { AliasFilterType, EntityAlias, EntityAliasFilter, EntityAliasFilterResult } from '@shared/models/alias.models';
 import {
   EdgeImportEntityData,
   EntitiesKeysByQuery,
@@ -59,7 +53,7 @@ import {
   ImportEntityData
 } from '@shared/models/entity.models';
 import { EntityRelationService } from '@core/http/entity-relation.service';
-import { deepClone, generateSecret, guid, isDefined, isDefinedAndNotNull, isNotEmptyStr } from '@core/utils';
+import { deepClone, generateSecret, guid, isDefined, isDefinedAndNotNull } from '@core/utils';
 import { Asset } from '@shared/models/asset.models';
 import { Device, DeviceCredentialsType } from '@shared/models/device.models';
 import { AttributeService } from '@core/http/attribute.service';
@@ -83,8 +77,8 @@ import {
 import { alarmFields } from '@shared/models/alarm.models';
 import { OtaPackageService } from '@core/http/ota-package.service';
 import { EdgeService } from '@core/http/edge.service';
-import { Edge, EdgeEvent, EdgeEventType } from '@shared/models/edge.models';
-import { RuleChainMetaData, RuleChainType } from '@shared/models/rule-chain.models';
+import { Edge, EdgeEventType } from '@shared/models/edge.models';
+import { RuleChainType } from '@shared/models/rule-chain.models';
 import { WidgetService } from '@core/http/widget.service';
 import { DeviceProfileService } from '@core/http/device-profile.service';
 
@@ -327,7 +321,9 @@ export class EntityService {
         break;
       case EntityType.TENANT:
         pageLink.sortOrder.property = 'title';
-        if (authUser.authority === Authority.TENANT_ADMIN) {
+        if (authUser.authority === Authority.TENANT_ADMIN ||
+          authUser.authority === Authority.TENANT_INSTALL ||
+          authUser.authority === Authority.TENANT_INTEGRA) { //THERA
           entitiesObservable = this.getSingleTenantByPageLinkObservable(pageLink, config);
         } else {
           entitiesObservable = this.tenantService.getTenants(pageLink, config);
@@ -501,11 +497,7 @@ export class EntityService {
   }
 
   public getAliasFilterTypesByEntityTypes(entityTypes: Array<EntityType | AliasEntityType>): Array<AliasFilterType> {
-    const authState = getCurrentAuthState(this.store);
-    let allAliasFilterTypes: Array<AliasFilterType> = Object.values(AliasFilterType);
-    if (!authState.edgesSupportEnabled) {
-      allAliasFilterTypes = allAliasFilterTypes.filter(aliasFilterType => !edgeAliasFilterTypes.includes(aliasFilterType));
-    }
+    const allAliasFilterTypes: Array<AliasFilterType> = Object.keys(AliasFilterType).map((key) => AliasFilterType[key]);
     if (!entityTypes || !entityTypes.length) {
       return allAliasFilterTypes;
     }
@@ -629,36 +621,71 @@ export class EntityService {
       case Authority.SYS_ADMIN:
         entityTypes.push(EntityType.TENANT);
         break;
-      case Authority.TENANT_ADMIN:
-        entityTypes.push(EntityType.DEVICE);
-        entityTypes.push(EntityType.ASSET);
-        entityTypes.push(EntityType.ENTITY_VIEW);
-        entityTypes.push(EntityType.TENANT);
-        entityTypes.push(EntityType.CUSTOMER);
-        entityTypes.push(EntityType.USER);
-        entityTypes.push(EntityType.DASHBOARD);
-        if (authState.edgesSupportEnabled) {
-          entityTypes.push(EntityType.EDGE);
-        }
-        if (useAliasEntityTypes) {
-          entityTypes.push(AliasEntityType.CURRENT_CUSTOMER);
-          entityTypes.push(AliasEntityType.CURRENT_TENANT);
-        }
-        break;
-      case Authority.CUSTOMER_USER:
-        entityTypes.push(EntityType.DEVICE);
-        entityTypes.push(EntityType.ASSET);
-        entityTypes.push(EntityType.ENTITY_VIEW);
-        entityTypes.push(EntityType.CUSTOMER);
-        entityTypes.push(EntityType.USER);
-        entityTypes.push(EntityType.DASHBOARD);
-        if (authState.edgesSupportEnabled) {
-          entityTypes.push(EntityType.EDGE);
-        }
-        if (useAliasEntityTypes) {
-          entityTypes.push(AliasEntityType.CURRENT_CUSTOMER);
-        }
-        break;
+
+        case Authority.TENANT_ADMIN:
+          entityTypes.push(EntityType.DEVICE);
+          entityTypes.push(EntityType.ASSET);
+          if (authState.edgesSupportEnabled) {
+            entityTypes.push(EntityType.EDGE);
+          }
+          entityTypes.push(EntityType.ENTITY_VIEW);
+          entityTypes.push(EntityType.TENANT);
+          entityTypes.push(EntityType.CUSTOMER);
+          entityTypes.push(EntityType.USER);
+          entityTypes.push(EntityType.DASHBOARD);
+          if (useAliasEntityTypes) {
+            entityTypes.push(AliasEntityType.CURRENT_CUSTOMER);
+            entityTypes.push(AliasEntityType.CURRENT_TENANT);
+          }
+          break;
+//THERA BEGIN          
+        case Authority.TENANT_INSTALL:
+          entityTypes.push(EntityType.DEVICE);
+          entityTypes.push(EntityType.ASSET);
+          if (authState.edgesSupportEnabled) {
+            entityTypes.push(EntityType.EDGE);
+          }
+          entityTypes.push(EntityType.ENTITY_VIEW);
+          entityTypes.push(EntityType.TENANT);
+          entityTypes.push(EntityType.CUSTOMER);
+          entityTypes.push(EntityType.USER);
+          entityTypes.push(EntityType.DASHBOARD);
+          if (useAliasEntityTypes) {
+            entityTypes.push(AliasEntityType.CURRENT_CUSTOMER);
+            entityTypes.push(AliasEntityType.CURRENT_TENANT);
+          }
+          break;
+        case Authority.TENANT_INTEGRA:
+          entityTypes.push(EntityType.DEVICE);
+          entityTypes.push(EntityType.ASSET);
+          if (authState.edgesSupportEnabled) {
+            entityTypes.push(EntityType.EDGE);
+          }
+          entityTypes.push(EntityType.ENTITY_VIEW);
+          entityTypes.push(EntityType.TENANT);
+          entityTypes.push(EntityType.CUSTOMER);
+          entityTypes.push(EntityType.USER);
+          entityTypes.push(EntityType.DASHBOARD);
+          if (useAliasEntityTypes) {
+            entityTypes.push(AliasEntityType.CURRENT_CUSTOMER);
+            entityTypes.push(AliasEntityType.CURRENT_TENANT);
+          }
+          break;
+//THERA END
+        case Authority.CUSTOMER_USER:
+          entityTypes.push(EntityType.DEVICE);
+          entityTypes.push(EntityType.ASSET);
+          if (authState.edgesSupportEnabled) {
+            entityTypes.push(EntityType.EDGE);
+          }
+          entityTypes.push(EntityType.ENTITY_VIEW);
+          entityTypes.push(EntityType.CUSTOMER);
+          entityTypes.push(EntityType.USER);
+          entityTypes.push(EntityType.DASHBOARD);
+          if (useAliasEntityTypes) {
+            entityTypes.push(AliasEntityType.CURRENT_CUSTOMER);
+          }
+          break;
     }
     if (useAliasEntityTypes) {
       entityTypes.push(AliasEntityType.CURRENT_USER);
@@ -687,9 +714,21 @@ export class EntityService {
         entityFieldKeys.push(entityFields.lastName.keyName);
         break;
       case EntityType.TENANT:
-      case EntityType.CUSTOMER:
         entityFieldKeys.push(entityFields.title.keyName);
         entityFieldKeys.push(entityFields.email.keyName);
+        entityFieldKeys.push(entityFields.country.keyName);
+        entityFieldKeys.push(entityFields.state.keyName);
+        entityFieldKeys.push(entityFields.city.keyName);
+        entityFieldKeys.push(entityFields.address.keyName);
+        entityFieldKeys.push(entityFields.address2.keyName);
+        entityFieldKeys.push(entityFields.zip.keyName);
+        entityFieldKeys.push(entityFields.phone.keyName);
+        break;        
+      case EntityType.CUSTOMER:
+        entityFieldKeys.push(entityFields.title.keyName);
+        entityFieldKeys.push(entityFields.integratorId.keyName); //THERA
+        entityFieldKeys.push(entityFields.installerId.keyName);  //THERA
+        entityFieldKeys.push(entityFields.email.keyName); 
         entityFieldKeys.push(entityFields.country.keyName);
         entityFieldKeys.push(entityFields.state.keyName);
         entityFieldKeys.push(entityFields.city.keyName);
@@ -964,12 +1003,7 @@ export class EntityService {
           map(() => {
             return { create: { entity: 1 } } as ImportEntitiesResultInfo;
           }),
-          catchError(err => of({
-            error: {
-              entity: 1,
-              errors: err.message
-            }
-          } as ImportEntitiesResultInfo))
+          catchError(err => of({ error: { entity: 1 } } as ImportEntitiesResultInfo))
         );
       }),
       catchError(err => {
@@ -993,28 +1027,13 @@ export class EntityService {
                 map(() => {
                   return { update: { entity: 1 } } as ImportEntitiesResultInfo;
                 }),
-                catchError(updateError => of({
-                  error: {
-                    entity: 1,
-                    errors: updateError.message
-                  }
-                } as ImportEntitiesResultInfo))
+                catchError(updateError => of({ error: { entity: 1 } } as ImportEntitiesResultInfo))
               );
             }),
-            catchError(findErr => of({
-              error: {
-                entity: 1,
-                errors: `Line: ${entityData.lineNumber}; Error: ${findErr.error.message}`
-              }
-            } as ImportEntitiesResultInfo))
+            catchError(findErr => of({ error: { entity: 1 } } as ImportEntitiesResultInfo))
           );
         } else {
-          return of({
-            error: {
-              entity: 1,
-              errors: `Line: ${entityData.lineNumber}; Error: ${err.error.message}`
-            }
-          } as ImportEntitiesResultInfo);
+          return of({ error: { entity: 1 } } as ImportEntitiesResultInfo);
         }
       })
     );
@@ -1070,6 +1089,7 @@ export class EntityService {
         break;
     }
     return saveEntityObservable;
+
   }
 
   private getUpdateEntityTasks(entityType: EntityType,  entityData: ImportEntityData | EdgeImportEntityData,
@@ -1142,31 +1162,15 @@ export class EntityService {
   public saveEntityData(entityId: EntityId, entityData: ImportEntityData, config?: RequestConfig): Observable<any> {
     const observables: Observable<string>[] = [];
     let observable: Observable<string>;
-    if (Object.keys(entityData.credential).length) {
-      let credentialsType: DeviceCredentialsType;
-      let credentialsId: string = null;
-      let credentialsValue: string = null;
-      if (isDefinedAndNotNull(entityData.credential.mqtt)) {
-        credentialsType = DeviceCredentialsType.MQTT_BASIC;
-        credentialsValue = JSON.stringify(entityData.credential.mqtt);
-      } else if (isDefinedAndNotNull(entityData.credential.lwm2m)) {
-        credentialsType = DeviceCredentialsType.LWM2M_CREDENTIALS;
-        credentialsValue = JSON.stringify(entityData.credential.lwm2m);
-      } else if (isNotEmptyStr(entityData.credential.x509)) {
-        credentialsType = DeviceCredentialsType.X509_CERTIFICATE;
-        credentialsValue = entityData.credential.x509;
-      } else {
-        credentialsType = DeviceCredentialsType.ACCESS_TOKEN;
-        credentialsId = entityData.credential.accessToken;
-      }
+    if (entityData.accessToken && entityData.accessToken !== '') {
       observable = this.deviceService.getDeviceCredentials(entityId.id, false, config).pipe(
         mergeMap((credentials) => {
-          credentials.credentialsId = credentialsId;
-          credentials.credentialsType = credentialsType;
-          credentials.credentialsValue = credentialsValue;
+          credentials.credentialsId = entityData.accessToken;
+          credentials.credentialsType = DeviceCredentialsType.ACCESS_TOKEN;
+          credentials.credentialsValue = null;
           return this.deviceService.saveDeviceCredentials(credentials, config).pipe(
             map(() => 'ok'),
-            catchError(err => of(`Line: ${entityData.lineNumber}; Error: ${err.error.message}`))
+            catchError(err => of('error'))
           );
         })
       );
@@ -1176,7 +1180,7 @@ export class EntityService {
       observable = this.attributeService.saveEntityAttributes(entityId, AttributeScope.SHARED_SCOPE,
         entityData.attributes.shared, config).pipe(
         map(() => 'ok'),
-        catchError(err => of(`Line: ${entityData.lineNumber}; Error: ${err.error.message}`))
+        catchError(err => of('error'))
       );
       observables.push(observable);
     }
@@ -1184,23 +1188,23 @@ export class EntityService {
       observable = this.attributeService.saveEntityAttributes(entityId, AttributeScope.SERVER_SCOPE,
         entityData.attributes.server, config).pipe(
         map(() => 'ok'),
-        catchError(err => of(`Line: ${entityData.lineNumber}; Error: ${err.error.message}`))
+        catchError(err => of('error'))
       );
       observables.push(observable);
     }
     if (entityData.timeseries && entityData.timeseries.length) {
       observable = this.attributeService.saveEntityTimeseries(entityId, 'time', entityData.timeseries, config).pipe(
         map(() => 'ok'),
-        catchError(err => of(`Line: ${entityData.lineNumber}; Error: ${err.error.message}`))
+        catchError(err => of('error'))
       );
       observables.push(observable);
     }
     if (observables.length) {
       return forkJoin(observables).pipe(
         map((response) => {
-          const hasError = response.filter((status) => status !== 'ok');
-          if (hasError.length > 0) {
-            throw Error(hasError.join('\n'));
+          const hasError = response.filter((status) => status === 'error').length > 0;
+          if (hasError) {
+            throw Error();
           } else {
             return response;
           }
@@ -1252,7 +1256,9 @@ export class EntityService {
       entityId.id = authUser.userId;
     } else if (entityType === AliasEntityType.CURRENT_USER_OWNER){
       const authUser =  getCurrentAuthUser(this.store);
-      if (authUser.authority === Authority.TENANT_ADMIN) {
+      if (authUser.authority === Authority.TENANT_ADMIN ||
+          authUser.authority === Authority.TENANT_INSTALL ||
+          authUser.authority === Authority.TENANT_INTEGRA) { //THERA
         entityId.entityType = EntityType.TENANT;
         entityId.id = authUser.tenantId;
       } else if (authUser.authority === Authority.CUSTOMER_USER) {
@@ -1387,8 +1393,8 @@ export class EntityService {
     return entitiesObservable;
   }
 
-  public getEdgeEventContent(entity: EdgeEvent): Observable<BaseData<HasId> | RuleChainMetaData | string> {
-    let entityObservable: Observable<BaseData<HasId> | RuleChainMetaData | string>;
+  public getEdgeEventContentByEntityType(entity: any): Observable<any> {
+    let entityObservable: Observable<any>;
     const entityId: string = entity.entityId;
     const entityType: any = entity.type;
     switch (entityType) {

@@ -217,7 +217,10 @@ export class AuthService {
 
   private forceDefaultPlace(authState?: AuthState, path?: string, params?: any): boolean {
     if (authState && authState.authUser) {
-      if (authState.authUser.authority === Authority.TENANT_ADMIN || authState.authUser.authority === Authority.CUSTOMER_USER) {
+      if (authState.authUser.authority === Authority.TENANT_ADMIN || 
+          authState.authUser.authority === Authority.TENANT_INSTALL || 
+          authState.authUser.authority === Authority.TENANT_INTEGRA || 
+          authState.authUser.authority === Authority.CUSTOMER_USER) { //THERA
         if ((this.userHasDefaultDashboard(authState) && authState.forceFullscreen) || authState.authUser.isPublic) {
           if (path === 'profile') {
             if (this.userHasProfile(authState.authUser)) {
@@ -248,7 +251,10 @@ export class AuthService {
         } else {
           result = this.router.parseUrl('home');
         }
-        if (authState.authUser.authority === Authority.TENANT_ADMIN || authState.authUser.authority === Authority.CUSTOMER_USER) {
+        if (authState.authUser.authority === Authority.TENANT_ADMIN || 
+          authState.authUser.authority === Authority.TENANT_INSTALL || 
+          authState.authUser.authority === Authority.TENANT_INTEGRA || 
+          authState.authUser.authority === Authority.CUSTOMER_USER) { //THERA
           if (this.userHasDefaultDashboard(authState)) {
             const dashboardId = authState.userDetails.additionalInfo.defaultDashboardId;
             if (authState.forceFullscreen) {
@@ -426,7 +432,9 @@ export class AuthService {
 
   private loadIsUserTokenAccessEnabled(authUser: AuthUser): Observable<boolean> {
     if (authUser.authority === Authority.SYS_ADMIN ||
-        authUser.authority === Authority.TENANT_ADMIN) {
+        authUser.authority === Authority.TENANT_INSTALL ||
+        authUser.authority === Authority.TENANT_INTEGRA ||
+        authUser.authority === Authority.TENANT_ADMIN) { //THERA
       return this.http.get<boolean>('/api/user/tokenAccessEnabled', defaultHttpOptions());
     } else {
       return of(false);
@@ -636,10 +644,14 @@ export class AuthService {
 
   private fetchAllowedDashboardIds(authPayload: AuthPayload): Observable<string[]> {
     if (authPayload.forceFullscreen && (authPayload.authUser.authority === Authority.TENANT_ADMIN ||
-      authPayload.authUser.authority === Authority.CUSTOMER_USER)) {
+      authPayload.authUser.authority === Authority.TENANT_INSTALL ||
+      authPayload.authUser.authority === Authority.TENANT_INTEGRA ||
+      authPayload.authUser.authority === Authority.CUSTOMER_USER)) { //THERA
       const pageLink = new PageLink(100);
       let fetchDashboardsObservable: Observable<PageData<DashboardInfo>>;
-      if (authPayload.authUser.authority === Authority.TENANT_ADMIN) {
+      if (authPayload.authUser.authority === Authority.TENANT_ADMIN ||
+          authPayload.authUser.authority === Authority.TENANT_INSTALL ||
+          authPayload.authUser.authority === Authority.TENANT_INTEGRA) { //THERA
         fetchDashboardsObservable = this.dashboardService.getTenantDashboards(pageLink);
       } else {
         fetchDashboardsObservable = this.dashboardService.getCustomerDashboards(authPayload.authUser.customerId, pageLink);

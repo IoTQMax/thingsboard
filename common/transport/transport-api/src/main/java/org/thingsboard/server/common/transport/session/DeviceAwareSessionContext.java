@@ -46,7 +46,6 @@ public abstract class DeviceAwareSessionContext implements SessionContext {
     @Setter
     private volatile TransportProtos.SessionInfoProto sessionInfo;
 
-    @Setter
     private volatile boolean connected;
 
     public DeviceId getDeviceId() {
@@ -55,6 +54,7 @@ public abstract class DeviceAwareSessionContext implements SessionContext {
 
     public void setDeviceInfo(TransportDeviceInfo deviceInfo) {
         this.deviceInfo = deviceInfo;
+        this.connected = true;
         this.deviceId = deviceInfo.getDeviceId();
     }
 

@@ -43,7 +43,7 @@ const routes: Routes = [
         path: '',
         component: EntitiesTableComponent,
         data: {
-          auth: [Authority.TENANT_ADMIN],
+          auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
           title: 'customer.customers'
         },
         resolve: {
@@ -54,7 +54,7 @@ const routes: Routes = [
         path: ':customerId/users',
         component: EntitiesTableComponent,
         data: {
-          auth: [Authority.TENANT_ADMIN],
+          auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
           title: 'user.customer-users',
           breadcrumb: {
             label: 'user.customer-users',
@@ -69,7 +69,7 @@ const routes: Routes = [
         path: ':customerId/devices',
         component: EntitiesTableComponent,
         data: {
-          auth: [Authority.TENANT_ADMIN],
+          auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
           title: 'customer.devices',
           devicesType: 'customer',
           breadcrumb: {
@@ -85,7 +85,7 @@ const routes: Routes = [
         path: ':customerId/assets',
         component: EntitiesTableComponent,
         data: {
-          auth: [Authority.TENANT_ADMIN],
+          auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
           title: 'customer.assets',
           assetsType: 'customer',
           breadcrumb: {
@@ -101,7 +101,7 @@ const routes: Routes = [
         path: ':customerId/edgeInstances',
         component: EntitiesTableComponent,
         data: {
-          auth: [Authority.TENANT_ADMIN],
+          auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
           title: 'customer.edges',
           edgesType: 'customer',
           breadcrumb: {
@@ -126,7 +126,7 @@ const routes: Routes = [
             path: '',
             component: EntitiesTableComponent,
             data: {
-              auth: [Authority.TENANT_ADMIN],
+              auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
               title: 'customer.dashboards',
               dashboardsType: 'customer'
             },
@@ -142,7 +142,7 @@ const routes: Routes = [
                 labelFunction: dashboardBreadcumbLabelFunction,
                 icon: 'dashboard'
               } as BreadCrumbConfig<DashboardPageComponent>,
-              auth: [Authority.TENANT_ADMIN, Authority.CUSTOMER_USER],
+              auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA, Authority.CUSTOMER_USER], //THERA
               title: 'customer.dashboard',
               widgetEditMode: false
             },

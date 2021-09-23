@@ -53,7 +53,7 @@ public class TenantController extends BaseController {
     @Autowired
     private TenantService tenantService;
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/tenant/{tenantId}", method = RequestMethod.GET)
     @ResponseBody
     public Tenant getTenantById(@PathVariable("tenantId") String strTenantId) throws ThingsboardException {
@@ -70,7 +70,7 @@ public class TenantController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/tenant/info/{tenantId}", method = RequestMethod.GET)
     @ResponseBody
     public TenantInfo getTenantInfoById(@PathVariable("tenantId") String strTenantId) throws ThingsboardException {
@@ -95,11 +95,13 @@ public class TenantController extends BaseController {
             tenant = checkNotNull(tenantService.saveTenant(tenant));
             if (newTenant) {
                 installScripts.createDefaultRuleChains(tenant.getId());
-                installScripts.createDefaultEdgeRuleChains(tenant.getId());
+                if (edgesEnabled) {
+                    installScripts.createDefaultEdgeRuleChains(tenant.getId());
+                }
             }
             tenantProfileCache.evict(tenant.getId());
             tbClusterService.onTenantChange(tenant, null);
-            tbClusterService.broadcastEntityStateChangeEvent(tenant.getId(), tenant.getId(),
+            tbClusterService.onEntityStateChange(tenant.getId(), tenant.getId(),
                     newTenant ? ComponentLifecycleEvent.CREATED : ComponentLifecycleEvent.UPDATED);
             return tenant;
         } catch (Exception e) {
@@ -118,7 +120,7 @@ public class TenantController extends BaseController {
             tenantService.deleteTenant(tenantId);
             tenantProfileCache.evict(tenantId);
             tbClusterService.onTenantDelete(tenant, null);
-            tbClusterService.broadcastEntityStateChangeEvent(tenantId, tenantId, ComponentLifecycleEvent.DELETED);
+            tbClusterService.onEntityStateChange(tenantId, tenantId, ComponentLifecycleEvent.DELETED);
         } catch (Exception e) {
             throw handleException(e);
         }

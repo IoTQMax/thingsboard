@@ -26,8 +26,8 @@ import {
   ViewChild
 } from '@angular/core';
 import { ControlValueAccessor, FormBuilder, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { merge, Observable, of, Subject } from 'rxjs';
-import { catchError, debounceTime, map, share, switchMap, tap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { map, mergeMap, share, tap } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 import { AppState } from '@app/core/core.state';
 import { TranslateService } from '@ngx-translate/core';
@@ -66,7 +66,6 @@ export class EntityAutocompleteComponent implements ControlValueAccessor, OnInit
       this.entityTypeValue = entityType;
       this.load();
       this.reset();
-      this.refresh$.next([]);
       this.dirty = true;
     }
   }
@@ -79,7 +78,6 @@ export class EntityAutocompleteComponent implements ControlValueAccessor, OnInit
       if (currentEntity) {
         if ((currentEntity as any).type !== this.entitySubtypeValue) {
           this.reset();
-          this.refresh$.next([]);
           this.dirty = true;
         }
       }
@@ -123,8 +121,6 @@ export class EntityAutocompleteComponent implements ControlValueAccessor, OnInit
 
   private dirty = false;
 
-  private refresh$ = new Subject<Array<BaseData<EntityId>>>();
-
   private propagateChange = (v: any) => { };
 
   constructor(private store: Store<AppState>,
@@ -144,29 +140,25 @@ export class EntityAutocompleteComponent implements ControlValueAccessor, OnInit
   }
 
   ngOnInit() {
-    this.filteredEntities = merge(
-      this.refresh$.asObservable(),
-      this.selectEntityFormGroup.get('entity').valueChanges
-        .pipe(
-          debounceTime(150),
-          tap(value => {
-            let modelValue;
-            if (typeof value === 'string' || !value) {
-              modelValue = null;
-            } else {
-              modelValue = value.id.id;
-            }
-            this.updateView(modelValue, value);
-            if (value === null) {
-              this.clear();
-            }
-          }),
-          // startWith<string | BaseData<EntityId>>(''),
-          map(value => value ? (typeof value === 'string' ? value : value.name) : ''),
-          switchMap(name => this.fetchEntities(name)),
-          share()
-        )
-    );
+    this.filteredEntities = this.selectEntityFormGroup.get('entity').valueChanges
+      .pipe(
+        tap(value => {
+          let modelValue;
+          if (typeof value === 'string' || !value) {
+            modelValue = null;
+          } else {
+            modelValue = value.id.id;
+          }
+          this.updateView(modelValue, value);
+          if (value === null) {
+            this.clear();
+          }
+        }),
+        // startWith<string | BaseData<EntityId>>(''),
+        map(value => value ? (typeof value === 'string' ? value : value.name) : ''),
+        mergeMap(name => this.fetchEntities(name) ),
+        share()
+      );
   }
 
   ngAfterViewInit(): void {}
@@ -233,7 +225,9 @@ export class EntityAutocompleteComponent implements ControlValueAccessor, OnInit
           break;
         case AliasEntityType.CURRENT_USER_OWNER:
           const authUser =  getCurrentAuthUser(this.store);
-          if (authUser.authority === Authority.TENANT_ADMIN) {
+          if (authUser.authority === Authority.TENANT_ADMIN ||
+          authUser.authority === Authority.TENANT_INSTALL ||
+          authUser.authority === Authority.TENANT_INTEGRA) { //THERA
             this.entityText = 'tenant.tenant';
             this.noEntitiesMatchingText = 'tenant.no-tenants-matching';
             this.entityRequiredText = 'tenant.tenant-required';
@@ -334,7 +328,6 @@ export class EntityAutocompleteComponent implements ControlValueAccessor, OnInit
     const targetEntityType = this.checkEntityType(this.entityTypeValue);
     return this.entityService.getEntitiesByNameFilter(targetEntityType, searchText,
       50, this.entitySubtypeValue, {ignoreLoading: true}).pipe(
-      catchError(() => of(null)),
       map((data) => {
         if (data) {
           if (this.excludeEntityIds && this.excludeEntityIds.length) {
@@ -372,7 +365,9 @@ export class EntityAutocompleteComponent implements ControlValueAccessor, OnInit
       return EntityType.USER;
     } else if (entityType === AliasEntityType.CURRENT_USER_OWNER) {
       const authUser =  getCurrentAuthUser(this.store);
-      if (authUser.authority === Authority.TENANT_ADMIN) {
+      if (authUser.authority === Authority.TENANT_ADMIN ||
+          authUser.authority === Authority.TENANT_INSTALL ||
+          authUser.authority === Authority.TENANT_INTEGRA) { //THERA
         return EntityType.TENANT;
       } else {
         return EntityType.CUSTOMER;

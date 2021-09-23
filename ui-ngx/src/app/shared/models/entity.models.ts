@@ -17,8 +17,6 @@
 import { EntityType } from '@shared/models/entity-type.models';
 import { AttributeData } from './telemetry/telemetry.models';
 import { EntityId } from '@shared/models/id/entity-id';
-import { DeviceCredentialMQTTBasic } from '@shared/models/device.models';
-import { Lwm2mSecurityConfigModels } from '@shared/models/lwm2m-security-config.models';
 
 export interface EntityInfo {
   name?: string;
@@ -34,18 +32,12 @@ export interface EntityInfoData {
 }
 
 export interface ImportEntityData {
-  lineNumber: number;
   name: string;
   type: string;
   label: string;
   gateway: boolean;
   description: string;
-  credential: {
-    accessToken?: string;
-    x509?: string;
-    mqtt?: DeviceCredentialMQTTBasic;
-    lwm2m?: Lwm2mSecurityConfigModels;
-  };
+  accessToken: string;
   attributes: {
     server: AttributeData[],
     shared: AttributeData[]
@@ -69,7 +61,6 @@ export interface ImportEntitiesResultInfo {
   };
   error?: {
     entity: number;
-    errors?: string;
   };
 }
 
@@ -123,6 +114,18 @@ export const entityFields: {[fieldName: string]: EntityField} = {
     name: 'entity-field.title',
     value: 'title'
   },
+  /* THERA BEGIN */
+  integratorId: {
+    keyName: 'integratorId',
+    name: 'entity-field.integratorId',
+    value: 'integratorId'
+  },
+  installerId: {
+    keyName: 'installerId',
+    name: 'entity-field.installerId',
+    value: 'installerId'
+  },
+   /* THERA END */
   country: {
     keyName: 'country',
     name: 'entity-field.country',

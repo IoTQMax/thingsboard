@@ -38,7 +38,7 @@ import java.util.Set;
 @RequestMapping("/api")
 public class ComponentDescriptorController extends BaseController {
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/component/{componentDescriptorClazz:.+}", method = RequestMethod.GET)
     @ResponseBody
     public ComponentDescriptor getComponentDescriptorByClazz(@PathVariable("componentDescriptorClazz") String strComponentDescriptorClazz) throws ThingsboardException {
@@ -50,7 +50,7 @@ public class ComponentDescriptorController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/components/{componentType}", method = RequestMethod.GET)
     @ResponseBody
     public List<ComponentDescriptor> getComponentDescriptorsByType(@PathVariable("componentType") String strComponentType,
@@ -63,7 +63,7 @@ public class ComponentDescriptorController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/components", params = {"componentTypes"}, method = RequestMethod.GET)
     @ResponseBody
     public List<ComponentDescriptor> getComponentDescriptorsByTypes(@RequestParam("componentTypes") String[] strComponentTypes,

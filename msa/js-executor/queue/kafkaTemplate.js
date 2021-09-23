@@ -99,7 +99,7 @@ async function sendMessagesAsBatch(isImmediately) {
 
 (async () => {
     try {
-        logger.info('Starting ThingsBoard JavaScript Executor Microservice...');
+        logger.info('Starting Effi.ai JavaScript Executor Microservice...');
 
         const kafkaBootstrapServers = config.get('kafka.bootstrap.servers');
         const requestTopic = config.get('request_topic');
@@ -190,23 +190,13 @@ async function sendMessagesAsBatch(isImmediately) {
         removeListeners[COMMIT_OFFSETS] = consumer.on(COMMIT_OFFSETS, e => logger.info(`consumer COMMIT_OFFSETS topics ${e.payload.topics}`));
 */
 
-        const { CRASH } = consumer.events;
-
-        consumer.on(CRASH, e => {
-            logger.error(`Got consumer CRASH event, should restart: ${e.payload.restart}`);
-            if (!e.payload.restart) {
-                logger.error('Going to exit due to not retryable error!');
-                exit(-1);
-            }
-        });
-
         const messageProcessor = new JsInvokeMessageProcessor(new KafkaProducer());
         await consumer.connect();
         await producer.connect();
         sendLoopWithLinger();
         await consumer.subscribe({topic: requestTopic});
 
-        logger.info('Started ThingsBoard JavaScript Executor Microservice.');
+        logger.info('Started Effi.ai JavaScript Executor Microservice.');
         await consumer.run({
             partitionsConsumedConcurrently: partitionsConsumedConcurrently,
             eachMessage: async ({topic, partition, message}) => {
@@ -221,7 +211,7 @@ async function sendMessagesAsBatch(isImmediately) {
         });
 
     } catch (e) {
-        logger.error('Failed to start ThingsBoard JavaScript Executor Microservice: %s', e.message);
+        logger.error('Failed to start Effi.ai JavaScript Executor Microservice: %s', e.message);
         logger.error(e.stack);
         exit(-1);
     }

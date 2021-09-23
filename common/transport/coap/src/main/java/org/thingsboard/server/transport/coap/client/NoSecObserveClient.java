@@ -22,7 +22,6 @@ import org.eclipse.californium.core.CoapObserveRelation;
 import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
-import org.thingsboard.common.util.ThingsBoardThreadFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -37,7 +36,7 @@ public class NoSecObserveClient {
 
     private CoapClient coapClient;
     private CoapObserveRelation observeRelation;
-    private ExecutorService executor = Executors.newFixedThreadPool(1, ThingsBoardThreadFactory.forName(getClass().getSimpleName()));
+    private ExecutorService executor = Executors.newFixedThreadPool(1);
     private CountDownLatch latch;
 
     public NoSecObserveClient(String host, int port, String accessToken) throws URISyntaxException {

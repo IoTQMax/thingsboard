@@ -74,7 +74,7 @@ function AwsSqsProducer() {
 
 (async () => {
     try {
-        logger.info('Starting ThingsBoard JavaScript Executor Microservice...');
+        logger.info('Starting Effi.ai JavaScript Executor Microservice...');
         AWS.config.update({accessKeyId: accessKeyId, secretAccessKey: secretAccessKey, region: region});
 
         sqsClient = new AWS.SQS({apiVersion: '2012-11-05'});
@@ -145,7 +145,7 @@ function AwsSqsProducer() {
             }
         }
     } catch (e) {
-        logger.error('Failed to start ThingsBoard JavaScript Executor Microservice: %s', e.message);
+        logger.error('Failed to start Effi.ai JavaScript Executor Microservice: %s', e.message);
         logger.error(e.stack);
         exit(-1);
     }

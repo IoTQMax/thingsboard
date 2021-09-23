@@ -45,7 +45,7 @@
          label="{{ 'relation.relations' | translate }}" #relationsTab="matTab">
   <tb-relation-table [active]="relationsTab.isActive" [entityId]="entity.id"></tb-relation-table>
 </mat-tab>
-<mat-tab *ngIf="entity && authUser.authority === authorities.TENANT_ADMIN"
+<mat-tab *ngIf="entity && (authUser.authority === authorities.TENANT_ADMIN || authUser.authority === authorities.TENANT_INSTALL || authUser.authority === authorities.TENANT_INTEGRA)"
          label="{{ 'audit-log.audit-logs' | translate }}" #auditLogsTab="matTab">
   <tb-audit-log-table detailsMode="true" [active]="auditLogsTab.isActive" [auditLogMode]="auditLogModes.CUSTOMER" [customerId]="entity.id"></tb-audit-log-table>
 </mat-tab>

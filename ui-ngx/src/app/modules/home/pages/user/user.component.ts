@@ -14,19 +14,17 @@
 /// limitations under the License.
 ///
 
-import { ChangeDetectorRef, Component, Inject, Optional } from '@angular/core';
+import { Component, Inject, Optional } from '@angular/core';
 import { select, Store } from '@ngrx/store';
+import { User } from '@shared/models/user.model';
 import { AppState } from '@core/core.state';
 import { EntityComponent } from '../../components/entity/entity.component';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { User } from '@shared/models/user.model';
 import { selectAuth } from '@core/auth/auth.selectors';
 import { map } from 'rxjs/operators';
 import { Authority } from '@shared/models/authority.enum';
 import { isDefinedAndNotNull, isUndefined } from '@core/utils';
 import { EntityTableConfig } from '@home/models/entity/entities-table-config.models';
-import { ActionNotificationShow } from '@app/core/notification/notification.actions';
-import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'tb-user',
@@ -45,10 +43,8 @@ export class UserComponent extends EntityComponent<User> {
   constructor(protected store: Store<AppState>,
               @Optional() @Inject('entity') protected entityValue: User,
               @Optional() @Inject('entitiesTableConfig') protected entitiesTableConfigValue: EntityTableConfig<User>,
-              public fb: FormBuilder,
-              protected cd: ChangeDetectorRef,
-              protected translate: TranslateService) {
-    super(store, fb, entityValue, entitiesTableConfigValue, cd);
+              public fb: FormBuilder) {
+    super(store, fb, entityValue, entitiesTableConfigValue);
   }
 
   hideDelete() {
@@ -101,18 +97,6 @@ export class UserComponent extends EntityComponent<User> {
     this.entityForm.patchValue({additionalInfo:
         {homeDashboardHideToolbar: entity.additionalInfo &&
           isDefinedAndNotNull(entity.additionalInfo.homeDashboardHideToolbar) ? entity.additionalInfo.homeDashboardHideToolbar : true}});
-  }
-
-  onUserIdCopied($event) {
-    this.store.dispatch(new ActionNotificationShow(
-      {
-        message: this.translate.instant('user.idCopiedMessage'),
-        type: 'success',
-        duration: 750,
-        verticalPosition: 'bottom',
-        horizontalPosition: 'right'
-      }
-    ))
   }
 
 }

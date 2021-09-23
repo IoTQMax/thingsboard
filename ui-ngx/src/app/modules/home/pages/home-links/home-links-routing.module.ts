@@ -39,7 +39,7 @@ const routes: Routes = [
     path: 'home',
     component: HomeLinksComponent,
     data: {
-      auth: [Authority.SYS_ADMIN, Authority.TENANT_ADMIN, Authority.CUSTOMER_USER],
+      auth: [Authority.SYS_ADMIN, Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA, Authority.CUSTOMER_USER], //THERA
       title: 'home.home',
       breadcrumb: {
         label: 'home.home',

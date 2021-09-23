@@ -30,12 +30,12 @@ import java.util.UUID;
 public interface EdgeEventDao extends Dao<EdgeEvent> {
 
     /**
-     * Save or update edge event object
+     * Save or update edge event object async
      *
      * @param edgeEvent the event object
      * @return saved edge event object future
      */
-    EdgeEvent save(EdgeEvent edgeEvent);
+    ListenableFuture<EdgeEvent> saveAsync(EdgeEvent edgeEvent);
 
 
     /**
@@ -47,11 +47,5 @@ public interface EdgeEventDao extends Dao<EdgeEvent> {
      * @return the event list
      */
     PageData<EdgeEvent> findEdgeEvents(UUID tenantId, EdgeId edgeId, TimePageLink pageLink, boolean withTsUpdate);
-
-    /**
-     * Executes stored procedure to cleanup old edge events.
-     * @param ttl the ttl for edge events in seconds
-     */
-    void cleanupEvents(long ttl);
 
 }

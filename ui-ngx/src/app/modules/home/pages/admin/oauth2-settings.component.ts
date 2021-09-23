@@ -98,9 +98,9 @@ export class OAuth2SettingsComponent extends PageComponent implements OnInit, Ha
   mapperConfigType = MapperConfigType;
   mapperConfigTypes = Object.keys(MapperConfigType);
   tenantNameStrategies = Object.keys(TenantNameStrategy);
-  protocols = Object.values(DomainSchema);
+  protocols = Object.keys(DomainSchema);
   domainSchemaTranslations = domainSchemaTranslations;
-  platformTypes = Object.values(PlatformType);
+  platformTypes = Object.keys(PlatformType);
   platformTypeTranslations = platformTypeTranslations;
 
   templateProvider = ['Custom'];

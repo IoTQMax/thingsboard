@@ -126,11 +126,10 @@ export abstract class StateControllerComponent implements IStateControllerCompon
     this.rxSubscriptions.length = 0;
   }
 
-  protected updateStateParam(newState: string, replaceCurrentHistoryUrl = false) {
+  protected updateStateParam(newState: string) {
     this.currentState = newState;
     if (this.syncStateWithQueryParam) {
-      const state = this.currentState ? encodeURIComponent(this.currentState) : this.currentState;
-      const queryParams: Params = {state};
+      const queryParams: Params = {state: this.currentState};
       this.ngZone.run(() => {
         this.router.navigate(
           [],
@@ -138,7 +137,6 @@ export abstract class StateControllerComponent implements IStateControllerCompon
             relativeTo: this.route,
             queryParams,
             queryParamsHandling: 'merge',
-            replaceUrl: replaceCurrentHistoryUrl
           });
       });
     }

@@ -16,12 +16,9 @@
 package org.thingsboard.server.controller;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -37,6 +34,7 @@ import org.thingsboard.server.common.data.asset.AssetInfo;
 import org.thingsboard.server.common.data.asset.AssetSearchQuery;
 import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.edge.Edge;
+import org.thingsboard.server.common.data.edge.EdgeEventType;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.edge.EdgeEventActionType;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
@@ -50,9 +48,6 @@ import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.dao.exception.IncorrectParameterException;
 import org.thingsboard.server.dao.model.ModelConstants;
 import org.thingsboard.server.queue.util.TbCoreComponent;
-import org.thingsboard.server.service.asset.AssetBulkImportService;
-import org.thingsboard.server.service.importing.BulkImportRequest;
-import org.thingsboard.server.service.importing.BulkImportResult;
 import org.thingsboard.server.service.security.model.SecurityUser;
 import org.thingsboard.server.service.security.permission.Operation;
 import org.thingsboard.server.service.security.permission.Resource;
@@ -68,14 +63,11 @@ import static org.thingsboard.server.controller.EdgeController.EDGE_ID;
 @RestController
 @TbCoreComponent
 @RequestMapping("/api")
-@RequiredArgsConstructor
-@Slf4j
 public class AssetController extends BaseController {
-    private final AssetBulkImportService assetBulkImportService;
 
     public static final String ASSET_ID = "assetId";
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/asset/{assetId}", method = RequestMethod.GET)
     @ResponseBody
     public Asset getAssetById(@PathVariable(ASSET_ID) String strAssetId) throws ThingsboardException {
@@ -88,7 +80,7 @@ public class AssetController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/asset/info/{assetId}", method = RequestMethod.GET)
     @ResponseBody
     public AssetInfo getAssetInfoById(@PathVariable(ASSET_ID) String strAssetId) throws ThingsboardException {
@@ -101,7 +93,7 @@ public class AssetController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/asset", method = RequestMethod.POST)
     @ResponseBody
     public Asset saveAsset(@RequestBody Asset asset) throws ThingsboardException {
@@ -116,7 +108,13 @@ public class AssetController extends BaseController {
 
             Asset savedAsset = checkNotNull(assetService.saveAsset(asset));
 
-            onAssetCreatedOrUpdated(savedAsset, asset.getId() != null);
+            logEntityAction(savedAsset.getId(), savedAsset,
+                    savedAsset.getCustomerId(),
+                    asset.getId() == null ? ActionType.ADDED : ActionType.UPDATED, null);
+
+            if (asset.getId() != null) {
+                sendEntityNotificationMsg(savedAsset.getTenantId(), savedAsset.getId(), EdgeEventActionType.UPDATED);
+            }
 
             return savedAsset;
         } catch (Exception e) {
@@ -126,21 +124,7 @@ public class AssetController extends BaseController {
         }
     }
 
-    private void onAssetCreatedOrUpdated(Asset asset, boolean updated) {
-        try {
-            logEntityAction(asset.getId(), asset,
-                    asset.getCustomerId(),
-                    updated ? ActionType.UPDATED : ActionType.ADDED, null);
-        } catch (ThingsboardException e) {
-            log.error("Failed to log entity action", e);
-        }
-
-        if (updated) {
-            sendEntityNotificationMsg(asset.getTenantId(), asset.getId(), EdgeEventActionType.UPDATED);
-        }
-    }
-
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/asset/{assetId}", method = RequestMethod.DELETE)
     @ResponseStatus(value = HttpStatus.OK)
     public void deleteAsset(@PathVariable(ASSET_ID) String strAssetId) throws ThingsboardException {
@@ -167,7 +151,7 @@ public class AssetController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/customer/{customerId}/asset/{assetId}", method = RequestMethod.POST)
     @ResponseBody
     public Asset assignAssetToCustomer(@PathVariable("customerId") String strCustomerId,
@@ -201,7 +185,7 @@ public class AssetController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/customer/asset/{assetId}", method = RequestMethod.DELETE)
     @ResponseBody
     public Asset unassignAssetFromCustomer(@PathVariable(ASSET_ID) String strAssetId) throws ThingsboardException {
@@ -235,7 +219,7 @@ public class AssetController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/customer/public/asset/{assetId}", method = RequestMethod.POST)
     @ResponseBody
     public Asset assignAssetToPublicCustomer(@PathVariable(ASSET_ID) String strAssetId) throws ThingsboardException {
@@ -261,7 +245,7 @@ public class AssetController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/tenant/assets", params = {"pageSize", "page"}, method = RequestMethod.GET)
     @ResponseBody
     public PageData<Asset> getTenantAssets(
@@ -274,7 +258,7 @@ public class AssetController extends BaseController {
         try {
             TenantId tenantId = getCurrentUser().getTenantId();
             PageLink pageLink = createPageLink(pageSize, page, textSearch, sortProperty, sortOrder);
-            if (type != null && type.trim().length() > 0) {
+            if (type != null && type.trim().length()>0) {
                 return checkNotNull(assetService.findAssetsByTenantIdAndType(tenantId, type, pageLink));
             } else {
                 return checkNotNull(assetService.findAssetsByTenantId(tenantId, pageLink));
@@ -284,7 +268,7 @@ public class AssetController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/tenant/assetInfos", params = {"pageSize", "page"}, method = RequestMethod.GET)
     @ResponseBody
     public PageData<AssetInfo> getTenantAssetInfos(
@@ -307,7 +291,7 @@ public class AssetController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/tenant/assets", params = {"assetName"}, method = RequestMethod.GET)
     @ResponseBody
     public Asset getTenantAsset(
@@ -320,7 +304,7 @@ public class AssetController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/customer/{customerId}/assets", params = {"pageSize", "page"}, method = RequestMethod.GET)
     @ResponseBody
     public PageData<Asset> getCustomerAssets(
@@ -337,7 +321,7 @@ public class AssetController extends BaseController {
             CustomerId customerId = new CustomerId(toUUID(strCustomerId));
             checkCustomerId(customerId, Operation.READ);
             PageLink pageLink = createPageLink(pageSize, page, textSearch, sortProperty, sortOrder);
-            if (type != null && type.trim().length() > 0) {
+            if (type != null && type.trim().length()>0) {
                 return checkNotNull(assetService.findAssetsByTenantIdAndCustomerIdAndType(tenantId, customerId, type, pageLink));
             } else {
                 return checkNotNull(assetService.findAssetsByTenantIdAndCustomerId(tenantId, customerId, pageLink));
@@ -347,7 +331,7 @@ public class AssetController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/customer/{customerId}/assetInfos", params = {"pageSize", "page"}, method = RequestMethod.GET)
     @ResponseBody
     public PageData<AssetInfo> getCustomerAssetInfos(
@@ -374,7 +358,7 @@ public class AssetController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/assets", params = {"assetIds"}, method = RequestMethod.GET)
     @ResponseBody
     public List<Asset> getAssetsByIds(
@@ -400,7 +384,7 @@ public class AssetController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/assets", method = RequestMethod.POST)
     @ResponseBody
     public List<Asset> findByQuery(@RequestBody AssetSearchQuery query) throws ThingsboardException {
@@ -424,7 +408,7 @@ public class AssetController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/asset/types", method = RequestMethod.GET)
     @ResponseBody
     public List<EntitySubtype> getAssetTypes() throws ThingsboardException {
@@ -438,11 +422,11 @@ public class AssetController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/edge/{edgeId}/asset/{assetId}", method = RequestMethod.POST)
     @ResponseBody
     public Asset assignAssetToEdge(@PathVariable(EDGE_ID) String strEdgeId,
-                                   @PathVariable(ASSET_ID) String strAssetId) throws ThingsboardException {
+                                       @PathVariable(ASSET_ID) String strAssetId) throws ThingsboardException {
         checkParameter(EDGE_ID, strEdgeId);
         checkParameter(ASSET_ID, strAssetId);
         try {
@@ -450,7 +434,7 @@ public class AssetController extends BaseController {
             Edge edge = checkEdgeId(edgeId, Operation.READ);
 
             AssetId assetId = new AssetId(toUUID(strAssetId));
-            checkAssetId(assetId, Operation.READ);
+            checkAssetId(assetId, Operation.ASSIGN_TO_EDGE);
 
             Asset savedAsset = checkNotNull(assetService.assignAssetToEdge(getTenantId(), assetId, edgeId));
 
@@ -460,7 +444,7 @@ public class AssetController extends BaseController {
 
             sendEntityAssignToEdgeNotificationMsg(getTenantId(), edgeId, savedAsset.getId(), EdgeEventActionType.ASSIGNED_TO_EDGE);
 
-            return savedAsset;
+            return  savedAsset;
         } catch (Exception e) {
 
             logEntityAction(emptyId(EntityType.ASSET), null,
@@ -471,7 +455,7 @@ public class AssetController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/edge/{edgeId}/asset/{assetId}", method = RequestMethod.DELETE)
     @ResponseBody
     public Asset unassignAssetFromEdge(@PathVariable(EDGE_ID) String strEdgeId,
@@ -483,7 +467,7 @@ public class AssetController extends BaseController {
             Edge edge = checkEdgeId(edgeId, Operation.READ);
 
             AssetId assetId = new AssetId(toUUID(strAssetId));
-            Asset asset = checkAssetId(assetId, Operation.READ);
+            Asset asset = checkAssetId(assetId, Operation.UNASSIGN_FROM_EDGE);
 
             Asset savedAsset = checkNotNull(assetService.unassignAssetFromEdge(getTenantId(), assetId, edgeId));
 
@@ -504,7 +488,7 @@ public class AssetController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/edge/{edgeId}/assets", params = {"pageSize", "page"}, method = RequestMethod.GET)
     @ResponseBody
     public PageData<Asset> getEdgeAssets(
@@ -546,13 +530,4 @@ public class AssetController extends BaseController {
             throw handleException(e);
         }
     }
-
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN')")
-    @PostMapping("/asset/bulk_import")
-    public BulkImportResult<Asset> processAssetsBulkImport(@RequestBody BulkImportRequest request) throws Exception {
-        return assetBulkImportService.processBulkImport(request, getCurrentUser(), importedAssetInfo -> {
-            onAssetCreatedOrUpdated(importedAssetInfo.getEntity(), importedAssetInfo.isUpdated());
-        });
-    }
-
 }

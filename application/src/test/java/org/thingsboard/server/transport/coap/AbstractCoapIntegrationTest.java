@@ -52,16 +52,6 @@ import static org.junit.Assert.assertNotNull;
 @Slf4j
 public abstract class AbstractCoapIntegrationTest extends AbstractTransportIntegrationTest {
 
-    protected CoapClient client;
-
-    @Override
-    protected void processAfterTest() throws Exception {
-        if (client != null) {
-            client.shutdown();
-        }
-        super.processAfterTest();
-    }
-
     protected void processBeforeTest(String deviceName, CoapDeviceType coapDeviceType, TransportPayloadType payloadType) throws Exception {
         this.processBeforeTest(deviceName, coapDeviceType, payloadType, null, null, null, null, null, null, DeviceProfileProvisionType.DISABLED);
     }
@@ -87,7 +77,7 @@ public abstract class AbstractCoapIntegrationTest extends AbstractTransportInteg
         tenantAdmin = new User();
         tenantAdmin.setAuthority(Authority.TENANT_ADMIN);
         tenantAdmin.setTenantId(savedTenant.getId());
-        tenantAdmin.setEmail("tenant" + atomicInteger.getAndIncrement() + "@thingsboard.org");
+        tenantAdmin.setEmail("tenant" + atomicInteger.getAndIncrement() + "@effi.ai");
         tenantAdmin.setFirstName("Joe");
         tenantAdmin.setLastName("Downs");
 

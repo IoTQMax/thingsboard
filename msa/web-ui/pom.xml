@@ -20,16 +20,16 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.thingsboard</groupId>
-        <version>3.3.2-SNAPSHOT</version>
+        <version>3.3.0-SNAPSHOT</version>
         <artifactId>msa</artifactId>
     </parent>
     <groupId>org.thingsboard.msa</groupId>
     <artifactId>web-ui</artifactId>
     <packaging>pom</packaging>
 
-    <name>ThingsBoard Web UI Microservice</name>
+    <name>Effi.ai Web UI Microservice</name>
     <url>https://thingsboard.io</url>
-    <description>Service for hosting ThingsBoard Web UI</description>
+    <description>Service for hosting Effi.ai Web UI</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -68,6 +68,7 @@
             <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
+                <version>1.7.5</version>
                 <configuration>
                     <installDirectory>target</installDirectory>
                     <workingDirectory>${basedir}</workingDirectory>
@@ -195,6 +196,7 @@
                     <plugin>
                         <groupId>com.github.eirslett</groupId>
                         <artifactId>frontend-maven-plugin</artifactId>
+                        <version>1.7.5</version>
                         <configuration>
                             <installDirectory>target</installDirectory>
                             <workingDirectory>${basedir}</workingDirectory>

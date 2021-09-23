@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 package org.thingsboard.server.dao.customer;
-
+import org.thingsboard.server.common.data.security.Authority; //THERA
 import org.thingsboard.server.common.data.Customer;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.PageData;
@@ -47,6 +47,17 @@ public interface CustomerDao extends Dao<Customer>, TenantEntityDao {
      */
     PageData<Customer> findCustomersByTenantId(UUID tenantId, PageLink pageLink);
 
+    
+    /**
+     * Find customers by tenant id and page link.
+     *
+     * @param tenantId the tenant id
+     * @param pageLink the page link
+     * @return the list of customer objects
+     */
+    PageData<Customer> findCustomersByTenantIdUser(Authority authority, UUID userId, UUID tenantId, PageLink pageLink); //THERA
+
+   
     /**
      * Find customers by tenantId and customer title.
      *

@@ -23,10 +23,8 @@ import org.thingsboard.server.common.data.DeviceProfile;
 import org.thingsboard.server.common.transport.auth.ValidateDeviceCredentialsResponse;
 import org.thingsboard.server.transport.lwm2m.bootstrap.secure.LwM2MBootstrapConfig;
 
-import java.io.Serializable;
-
 @Data
-public class TbLwM2MSecurityInfo implements Serializable {
+public class TbLwM2MSecurityInfo {
     private ValidateDeviceCredentialsResponse msg;
     private SecurityInfo securityInfo;
     private SecurityMode securityMode;

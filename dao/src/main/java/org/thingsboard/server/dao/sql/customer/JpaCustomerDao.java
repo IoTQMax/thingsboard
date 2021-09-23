@@ -15,6 +15,7 @@
  */
 package org.thingsboard.server.dao.sql.customer;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Component;
@@ -22,6 +23,8 @@ import org.thingsboard.server.common.data.Customer;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.PageData;
 import org.thingsboard.server.common.data.page.PageLink;
+import org.thingsboard.server.common.data.security.Authority; //THERA
+
 import org.thingsboard.server.dao.DaoUtil;
 import org.thingsboard.server.dao.customer.CustomerDao;
 import org.thingsboard.server.dao.model.sql.CustomerEntity;
@@ -57,6 +60,28 @@ public class JpaCustomerDao extends JpaAbstractSearchTextDao<CustomerEntity, Cus
                 Objects.toString(pageLink.getTextSearch(), ""),
                 DaoUtil.toPageable(pageLink)));
     }
+
+//THERA BEGIN
+    @Override
+    public PageData<Customer> findCustomersByTenantIdUser(Authority authority, UUID userId, UUID tenantId, PageLink pageLink) {
+        if (Authority.TENANT_INSTALL.equals(authority))
+        {
+            return DaoUtil.toPageData(customerRepository.findByTenantInstallerId(
+                userId,
+                tenantId,
+                Objects.toString(pageLink.getTextSearch(), ""),
+                DaoUtil.toPageable(pageLink)));
+
+        } else
+        {
+            return DaoUtil.toPageData(customerRepository.findByTenantIntegratorId(
+                userId,
+                tenantId,
+                Objects.toString(pageLink.getTextSearch(), ""),
+                DaoUtil.toPageable(pageLink)));
+        }
+    }
+//THERA END
 
     @Override
     public Optional<Customer> findCustomersByTenantIdAndTitle(UUID tenantId, String title) {

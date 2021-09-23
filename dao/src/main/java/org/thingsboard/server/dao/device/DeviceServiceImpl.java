@@ -27,7 +27,6 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -148,7 +147,6 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
         return deviceDao.findDeviceInfoById(tenantId, deviceId.getId());
     }
 
-    @Cacheable(cacheNames = DEVICE_CACHE, key = "{#tenantId, #deviceId}")
     @Override
     public Device findDeviceById(TenantId tenantId, DeviceId deviceId) {
         log.trace("Executing findDeviceById [{}]", deviceId);
@@ -180,46 +178,26 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
         return deviceOpt.orElse(null);
     }
 
-    @Caching(evict= {
-            @CacheEvict(cacheNames = DEVICE_CACHE, key = "{#device.tenantId, #device.name}"),
-            @CacheEvict(cacheNames = DEVICE_CACHE, key = "{#device.tenantId, #device.id}")
-    })
-    @Transactional
+    @CacheEvict(cacheNames = DEVICE_CACHE, key = "{#device.tenantId, #device.name}")
     @Override
     public Device saveDeviceWithAccessToken(Device device, String accessToken) {
-        return doSaveDevice(device, accessToken, true);
+        return doSaveDevice(device, accessToken);
     }
 
-    @Caching(evict= {
-            @CacheEvict(cacheNames = DEVICE_CACHE, key = "{#device.tenantId, #device.name}"),
-            @CacheEvict(cacheNames = DEVICE_CACHE, key = "{#device.tenantId, #device.id}")
-    })
-    @Override
-    public Device saveDevice(Device device, boolean doValidate) {
-        return doSaveDevice(device, null, doValidate);
-    }
-
-    @Caching(evict= {
-            @CacheEvict(cacheNames = DEVICE_CACHE, key = "{#device.tenantId, #device.name}"),
-            @CacheEvict(cacheNames = DEVICE_CACHE, key = "{#device.tenantId, #device.id}")
-    })
+    @CacheEvict(cacheNames = DEVICE_CACHE, key = "{#device.tenantId, #device.name}")
     @Override
     public Device saveDevice(Device device) {
-        return doSaveDevice(device, null, true);
+        return doSaveDevice(device, null);
     }
 
-    @Caching(evict= {
-            @CacheEvict(cacheNames = DEVICE_CACHE, key = "{#device.tenantId, #device.name}"),
-            @CacheEvict(cacheNames = DEVICE_CACHE, key = "{#device.tenantId, #device.id}")
-    })
-    @Transactional
+    @CacheEvict(cacheNames = DEVICE_CACHE, key = "{#device.tenantId, #device.name}")
     @Override
     public Device saveDeviceWithCredentials(Device device, DeviceCredentials deviceCredentials) {
         if (device.getId() == null) {
             Device deviceWithName = this.findDeviceByTenantIdAndName(device.getTenantId(), device.getName());
             device = deviceWithName == null ? device : deviceWithName.updateDevice(device);
         }
-        Device savedDevice = this.saveDeviceWithoutCredentials(device, true);
+        Device savedDevice = this.saveDeviceWithoutCredentials(device);
         deviceCredentials.setDeviceId(savedDevice.getId());
         if (device.getId() == null) {
             deviceCredentialsService.createDeviceCredentials(savedDevice.getTenantId(), deviceCredentials);
@@ -228,30 +206,27 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
             if (foundDeviceCredentials == null) {
                 deviceCredentialsService.createDeviceCredentials(savedDevice.getTenantId(), deviceCredentials);
             } else {
-                deviceCredentials.setId(foundDeviceCredentials.getId());
                 deviceCredentialsService.updateDeviceCredentials(device.getTenantId(), deviceCredentials);
             }
         }
         return savedDevice;
     }
 
-    private Device doSaveDevice(Device device, String accessToken, boolean doValidate) {
-        Device savedDevice = this.saveDeviceWithoutCredentials(device, doValidate);
+    private Device doSaveDevice(Device device, String accessToken) {
+        Device savedDevice = this.saveDeviceWithoutCredentials(device);
         if (device.getId() == null) {
             DeviceCredentials deviceCredentials = new DeviceCredentials();
             deviceCredentials.setDeviceId(new DeviceId(savedDevice.getUuidId()));
             deviceCredentials.setCredentialsType(DeviceCredentialsType.ACCESS_TOKEN);
             deviceCredentials.setCredentialsId(!StringUtils.isEmpty(accessToken) ? accessToken : RandomStringUtils.randomAlphanumeric(20));
-            deviceCredentialsService.createDeviceCredentials(savedDevice.getTenantId(), deviceCredentials);
+            deviceCredentialsService.createDeviceCredentials(device.getTenantId(), deviceCredentials);
         }
         return savedDevice;
     }
 
-    private Device saveDeviceWithoutCredentials(Device device, boolean doValidate) {
+    private Device saveDeviceWithoutCredentials(Device device) {
         log.trace("Executing saveDevice [{}]", device);
-        if (doValidate) {
-            deviceValidator.validate(device, Device::getTenantId);
-        }
+        deviceValidator.validate(device, Device::getTenantId);
         try {
             DeviceProfile deviceProfile;
             if (device.getDeviceProfileId() == null) {
@@ -269,13 +244,12 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
             }
             device.setType(deviceProfile.getName());
             device.setDeviceData(syncDeviceData(deviceProfile, device.getDeviceData()));
-            return deviceDao.saveAndFlush(device.getTenantId(), device);
+            return deviceDao.save(device.getTenantId(), device);
         } catch (Exception t) {
             ConstraintViolationException e = extractConstraintViolationException(t).orElse(null);
             if (e != null && e.getConstraintName() != null && e.getConstraintName().equalsIgnoreCase("device_name_unq_key")) {
                 // remove device from cache in case null value cached in the distributed redis.
                 removeDeviceFromCacheByName(device.getTenantId(), device.getName());
-                removeDeviceFromCacheById(device.getTenantId(), device.getId());
                 throw new DataValidationException("Device with such name already exists!");
             } else {
                 throw t;
@@ -320,20 +294,14 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
     public Device assignDeviceToCustomer(TenantId tenantId, DeviceId deviceId, CustomerId customerId) {
         Device device = findDeviceById(tenantId, deviceId);
         device.setCustomerId(customerId);
-        Device savedDevice = saveDevice(device);
-        removeDeviceFromCacheByName(tenantId, device.getName());
-        removeDeviceFromCacheById(tenantId, device.getId());
-        return savedDevice;
+        return saveDevice(device);
     }
 
     @Override
     public Device unassignDeviceFromCustomer(TenantId tenantId, DeviceId deviceId) {
         Device device = findDeviceById(tenantId, deviceId);
         device.setCustomerId(null);
-        Device savedDevice = saveDevice(device);
-        removeDeviceFromCacheByName(tenantId, device.getName());
-        removeDeviceFromCacheById(tenantId, device.getId());
-        return savedDevice;
+        return saveDevice(device);
     }
 
     @Override
@@ -359,7 +327,6 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
         deleteEntityRelations(tenantId, deviceId);
 
         removeDeviceFromCacheByName(tenantId, device.getName());
-        removeDeviceFromCacheById(tenantId, device.getId());
 
         deviceDao.removeById(tenantId, deviceId.getId());
     }
@@ -367,14 +334,6 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
     private void removeDeviceFromCacheByName(TenantId tenantId, String name) {
         Cache cache = cacheManager.getCache(DEVICE_CACHE);
         cache.evict(Arrays.asList(tenantId, name));
-    }
-
-    private void removeDeviceFromCacheById(TenantId tenantId, DeviceId deviceId) {
-        if (deviceId == null) {
-            return;
-        }
-        Cache cache = cacheManager.getCache(DEVICE_CACHE);
-        cache.evict(Arrays.asList(tenantId, deviceId));
     }
 
     @Override
@@ -562,6 +521,7 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
     }
 
     @Transactional
+    @CacheEvict(cacheNames = DEVICE_CACHE, key = "{#device.tenantId, #device.name}")
     @Override
     public Device assignDeviceToTenant(TenantId tenantId, Device device) {
         log.trace("Executing assignDeviceToTenant [{}][{}]", tenantId, device);
@@ -580,18 +540,9 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
 
         relationService.removeRelations(device.getTenantId(), device.getId());
 
-        TenantId oldTenantId = device.getTenantId();
-
         device.setTenantId(tenantId);
         device.setCustomerId(null);
-        Device savedDevice = doSaveDevice(device, null, true);
-
-        // explicitly remove device with previous tenant id from cache
-        // result device object will have different tenant id and will not remove entity from cache
-        removeDeviceFromCacheByName(oldTenantId, device.getName());
-        removeDeviceFromCacheById(oldTenantId, device.getId());
-
-        return savedDevice;
+        return doSaveDevice(device, null);
     }
 
     @Override
@@ -637,7 +588,6 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
                 throw new ProvisionFailedException(ProvisionResponseStatus.FAILURE.name());
             }
         }
-        removeDeviceFromCacheById(savedDevice.getTenantId(), savedDevice.getId()); // eviction by name is described as annotation @CacheEvict above
         return savedDevice;
     }
 
@@ -727,7 +677,6 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
                     }
                     if (!old.getName().equals(device.getName())) {
                         removeDeviceFromCacheByName(tenantId, old.getName());
-                        removeDeviceFromCacheById(tenantId, device.getId());
                     }
                 }
 

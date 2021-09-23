@@ -18,6 +18,10 @@ package org.thingsboard.server.dao.model;
 import com.datastax.oss.driver.api.core.uuid.Uuids;
 import org.apache.commons.lang3.ArrayUtils;
 import org.thingsboard.server.common.data.id.TenantId;
+
+import org.thingsboard.server.common.data.id.UserId; //THERA
+//import org.thingsboard.server.common.data.id.InstallerId;  //THERA
+
 import org.thingsboard.server.common.data.kv.Aggregation;
 
 import java.util.UUID;
@@ -40,6 +44,10 @@ public class ModelConstants {
     public static final String CREATED_TIME_PROPERTY = "created_time";
     public static final String USER_ID_PROPERTY = "user_id";
     public static final String TENANT_ID_PROPERTY = "tenant_id";
+
+    public static final String INTEGRATOR_ID_PROPERTY = "integrator_id"; //THERA
+    public static final String INSTALLER_ID_PROPERTY = "installer_id"; //THERA
+
     public static final String CUSTOMER_ID_PROPERTY = "customer_id";
     public static final String DEVICE_ID_PROPERTY = "device_id";
     public static final String TITLE_PROPERTY = "title";
@@ -134,6 +142,8 @@ public class ModelConstants {
      */
     public static final String CUSTOMER_COLUMN_FAMILY_NAME = "customer";
     public static final String CUSTOMER_TENANT_ID_PROPERTY = TENANT_ID_PROPERTY;
+    public static final String CUSTOMER_INTEGRATOR_ID_PROPERTY = INTEGRATOR_ID_PROPERTY; //THERA
+    public static final String CUSTOMER_INSTALLER_ID_PROPERTY = INSTALLER_ID_PROPERTY;   //THERA
     public static final String CUSTOMER_TITLE_PROPERTY = TITLE_PROPERTY;
     public static final String CUSTOMER_ADDITIONAL_INFO_PROPERTY = ADDITIONAL_INFO_PROPERTY;
 
@@ -339,8 +349,6 @@ public class ModelConstants {
     public static final String DASHBOARD_IMAGE_PROPERTY = "image";
     public static final String DASHBOARD_CONFIGURATION_PROPERTY = "configuration";
     public static final String DASHBOARD_ASSIGNED_CUSTOMERS_PROPERTY = "assigned_customers";
-    public static final String DASHBOARD_MOBILE_HIDE_PROPERTY = "mobile_hide";
-    public static final String DASHBOARD_MOBILE_ORDER_PROPERTY = "mobile_order";
 
     public static final String DASHBOARD_BY_TENANT_AND_SEARCH_TEXT_COLUMN_FAMILY_NAME = "dashboard_by_tenant_and_search_text";
 
@@ -499,7 +507,6 @@ public class ModelConstants {
     public static final String OTA_PACKAGE_TYPE_COLUMN = "type";
     public static final String OTA_PACKAGE_TILE_COLUMN = TITLE_PROPERTY;
     public static final String OTA_PACKAGE_VERSION_COLUMN = "version";
-    public static final String OTA_PACKAGE_TAG_COLUMN = "tag";
     public static final String OTA_PACKAGE_URL_COLUMN = "url";
     public static final String OTA_PACKAGE_FILE_NAME_COLUMN = "file_name";
     public static final String OTA_PACKAGE_CONTENT_TYPE_COLUMN = "content_type";
@@ -508,18 +515,6 @@ public class ModelConstants {
     public static final String OTA_PACKAGE_DATA_COLUMN = "data";
     public static final String OTA_PACKAGE_DATA_SIZE_COLUMN = "data_size";
     public static final String OTA_PACKAGE_ADDITIONAL_INFO_COLUMN = ADDITIONAL_INFO_PROPERTY;
-
-    /**
-     * Persisted RPC constants.
-     */
-    public static final String RPC_TABLE_NAME = "rpc";
-    public static final String RPC_TENANT_ID_COLUMN = TENANT_ID_COLUMN;
-    public static final String RPC_DEVICE_ID = "device_id";
-    public static final String RPC_EXPIRATION_TIME = "expiration_time";
-    public static final String RPC_REQUEST = "request";
-    public static final String RPC_RESPONSE = "response";
-    public static final String RPC_STATUS = "status";
-    public static final String RPC_ADDITIONAL_INFO = ADDITIONAL_INFO_PROPERTY;
 
     /**
      * Edge constants.

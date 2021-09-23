@@ -22,6 +22,10 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.thingsboard.server.common.data.Customer;
 import org.thingsboard.server.common.data.id.CustomerId;
+
+import org.thingsboard.server.common.data.id.UserId; //THERA
+//import org.thingsboard.server.common.data.id.InstallerId;  //THERA
+
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.dao.model.BaseSqlEntity;
 import org.thingsboard.server.dao.model.ModelConstants;
@@ -43,6 +47,14 @@ public final class CustomerEntity extends BaseSqlEntity<Customer> implements Sea
     @Column(name = ModelConstants.CUSTOMER_TENANT_ID_PROPERTY)
     private UUID tenantId;
     
+//THERA BEGIN INSTALLER & INTEGRATOR
+    @Column(name = ModelConstants.CUSTOMER_INTEGRATOR_ID_PROPERTY)
+    private UUID integratorId;
+
+    @Column(name = ModelConstants.CUSTOMER_INSTALLER_ID_PROPERTY)
+    private UUID installerId;
+//THERA END INSTALLER & INTEGRATOR
+
     @Column(name = ModelConstants.CUSTOMER_TITLE_PROPERTY)
     private String title;
     
@@ -77,6 +89,16 @@ public final class CustomerEntity extends BaseSqlEntity<Customer> implements Sea
     @Column(name = ModelConstants.CUSTOMER_ADDITIONAL_INFO_PROPERTY)
     private JsonNode additionalInfo;
 
+    // public static final Map<String,String> CostumerColumnMap = new HashMap<>();
+    // static {
+    //     CostumerColumnMap.put("InstallerName", "c.title");
+    //     CostumerColumnMap.put("IntegratorName", "p.name");
+    // }
+
+    // private String customerTitle;
+    // private boolean customerIsPublic;
+    // private String deviceProfileName;
+
     public CustomerEntity() {
         super();
     }
@@ -87,6 +109,13 @@ public final class CustomerEntity extends BaseSqlEntity<Customer> implements Sea
         }
         this.setCreatedTime(customer.getCreatedTime());
         this.tenantId = customer.getTenantId().getId();
+
+        this.integratorId = customer.getIntegratorId().getId(); //THERA
+        this.installerId = customer.getInstallerId().getId();   //THERA
+
+        // this.IntegratorName = 'Hola';
+        // this.InstallerName = 'Chau';
+
         this.title = customer.getTitle();
         this.country = customer.getCountry();
         this.state = customer.getState();
@@ -114,6 +143,13 @@ public final class CustomerEntity extends BaseSqlEntity<Customer> implements Sea
         Customer customer = new Customer(new CustomerId(this.getUuid()));
         customer.setCreatedTime(createdTime);
         customer.setTenantId(new TenantId(tenantId));
+
+        customer.setIntegratorId(new UserId(integratorId)); //THERA
+        customer.setInstallerId(new UserId(installerId));    //THERA
+
+        // customer.IntegratorName = 'Hola2';
+        // customer.InstallerName = 'Chau2';
+
         customer.setTitle(title);
         customer.setCountry(country);
         customer.setState(state);

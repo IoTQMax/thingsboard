@@ -15,15 +15,10 @@
  */
 package org.thingsboard.server.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.util.concurrent.ListenableFuture;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -54,36 +49,30 @@ import org.thingsboard.server.dao.exception.DataValidationException;
 import org.thingsboard.server.dao.exception.IncorrectParameterException;
 import org.thingsboard.server.dao.model.ModelConstants;
 import org.thingsboard.server.queue.util.TbCoreComponent;
-import org.thingsboard.server.service.edge.EdgeBulkImportService;
-import org.thingsboard.server.service.importing.BulkImportRequest;
-import org.thingsboard.server.service.importing.BulkImportResult;
+import org.thingsboard.server.service.edge.rpc.EdgeGrpcSession;
 import org.thingsboard.server.service.security.model.SecurityUser;
 import org.thingsboard.server.service.security.permission.Operation;
 import org.thingsboard.server.service.security.permission.Resource;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
 @TbCoreComponent
-@Slf4j
 @RequestMapping("/api")
-@RequiredArgsConstructor
 public class EdgeController extends BaseController {
-    private final EdgeBulkImportService edgeBulkImportService;
 
     public static final String EDGE_ID = "edgeId";
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/edges/enabled", method = RequestMethod.GET)
     @ResponseBody
     public boolean isEdgesSupportEnabled() {
         return edgesEnabled;
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/edge/{edgeId}", method = RequestMethod.GET)
     @ResponseBody
     public Edge getEdgeById(@PathVariable(EDGE_ID) String strEdgeId) throws ThingsboardException {
@@ -92,7 +81,7 @@ public class EdgeController extends BaseController {
             EdgeId edgeId = new EdgeId(toUUID(strEdgeId));
             Edge edge = checkEdgeId(edgeId, Operation.READ);
             if (Authority.CUSTOMER_USER.equals(getCurrentUser().getAuthority())) {
-                cleanUpLicenseKey(edge);
+                cleanUpSensitiveData(edge);
             }
             return edge;
         } catch (Exception e) {
@@ -100,7 +89,7 @@ public class EdgeController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/edge/info/{edgeId}", method = RequestMethod.GET)
     @ResponseBody
     public EdgeInfo getEdgeInfoById(@PathVariable(EDGE_ID) String strEdgeId) throws ThingsboardException {
@@ -109,7 +98,7 @@ public class EdgeController extends BaseController {
             EdgeId edgeId = new EdgeId(toUUID(strEdgeId));
             EdgeInfo edgeInfo = checkEdgeInfoId(edgeId, Operation.READ);
             if (Authority.CUSTOMER_USER.equals(getCurrentUser().getAuthority())) {
-                cleanUpLicenseKey(edgeInfo);
+                cleanUpSensitiveData(edgeInfo);
             }
             return edgeInfo;
         } catch (Exception e) {
@@ -117,7 +106,7 @@ public class EdgeController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/edge", method = RequestMethod.POST)
     @ResponseBody
     public Edge saveEdge(@RequestBody Edge edge) throws ThingsboardException {
@@ -139,9 +128,18 @@ public class EdgeController extends BaseController {
             accessControlService.checkPermission(getCurrentUser(), Resource.EDGE, operation,
                     edge.getId(), edge);
 
-            Edge savedEdge = checkNotNull(edgeService.saveEdge(edge, true));
-            onEdgeCreatedOrUpdated(tenantId, savedEdge, edgeTemplateRootRuleChain, !created);
+            Edge savedEdge = checkNotNull(edgeService.saveEdge(edge));
 
+            if (created) {
+                ruleChainService.assignRuleChainToEdge(tenantId, edgeTemplateRootRuleChain.getId(), savedEdge.getId());
+                edgeNotificationService.setEdgeRootRuleChain(tenantId, savedEdge, edgeTemplateRootRuleChain.getId());
+                edgeService.assignDefaultRuleChainsToEdge(tenantId, savedEdge.getId());
+            }
+
+            tbClusterService.onEntityStateChange(savedEdge.getTenantId(), savedEdge.getId(),
+                    created ? ComponentLifecycleEvent.CREATED : ComponentLifecycleEvent.UPDATED);
+
+            logEntityAction(savedEdge.getId(), savedEdge, null, created ? ActionType.ADDED : ActionType.UPDATED, null);
             return savedEdge;
         } catch (Exception e) {
             logEntityAction(emptyId(EntityType.EDGE), edge,
@@ -150,20 +148,7 @@ public class EdgeController extends BaseController {
         }
     }
 
-    private void onEdgeCreatedOrUpdated(TenantId tenantId, Edge edge, RuleChain edgeTemplateRootRuleChain, boolean updated) throws IOException, ThingsboardException {
-        if (!updated) {
-            ruleChainService.assignRuleChainToEdge(tenantId, edgeTemplateRootRuleChain.getId(), edge.getId());
-            edgeNotificationService.setEdgeRootRuleChain(tenantId, edge, edgeTemplateRootRuleChain.getId());
-            edgeService.assignDefaultRuleChainsToEdge(tenantId, edge.getId());
-        }
-
-        tbClusterService.broadcastEntityStateChangeEvent(edge.getTenantId(), edge.getId(),
-                updated ? ComponentLifecycleEvent.UPDATED : ComponentLifecycleEvent.CREATED);
-
-        logEntityAction(edge.getId(), edge, null, updated ? ActionType.UPDATED : ActionType.ADDED, null);
-    }
-
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/edge/{edgeId}", method = RequestMethod.DELETE)
     @ResponseStatus(value = HttpStatus.OK)
     public void deleteEdge(@PathVariable(EDGE_ID) String strEdgeId) throws ThingsboardException {
@@ -173,7 +158,7 @@ public class EdgeController extends BaseController {
             Edge edge = checkEdgeId(edgeId, Operation.DELETE);
             edgeService.deleteEdge(getTenantId(), edgeId);
 
-            tbClusterService.broadcastEntityStateChangeEvent(getTenantId(), edgeId,
+            tbClusterService.onEntityStateChange(getTenantId(), edgeId,
                     ComponentLifecycleEvent.DELETED);
 
             logEntityAction(edgeId, edge,
@@ -191,7 +176,7 @@ public class EdgeController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/edges", params = {"pageSize", "page"}, method = RequestMethod.GET)
     @ResponseBody
     public PageData<Edge> getEdges(@RequestParam int pageSize,
@@ -208,7 +193,7 @@ public class EdgeController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/customer/{customerId}/edge/{edgeId}", method = RequestMethod.POST)
     @ResponseBody
     public Edge assignEdgeToCustomer(@PathVariable("customerId") String strCustomerId,
@@ -224,7 +209,7 @@ public class EdgeController extends BaseController {
 
             Edge savedEdge = checkNotNull(edgeService.assignEdgeToCustomer(getCurrentUser().getTenantId(), edgeId, customerId));
 
-            tbClusterService.broadcastEntityStateChangeEvent(getTenantId(), edgeId,
+            tbClusterService.onEntityStateChange(getTenantId(), edgeId,
                     ComponentLifecycleEvent.UPDATED);
 
             logEntityAction(edgeId, savedEdge,
@@ -243,7 +228,7 @@ public class EdgeController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/customer/edge/{edgeId}", method = RequestMethod.DELETE)
     @ResponseBody
     public Edge unassignEdgeFromCustomer(@PathVariable(EDGE_ID) String strEdgeId) throws ThingsboardException {
@@ -258,7 +243,7 @@ public class EdgeController extends BaseController {
 
             Edge savedEdge = checkNotNull(edgeService.unassignEdgeFromCustomer(getCurrentUser().getTenantId(), edgeId));
 
-            tbClusterService.broadcastEntityStateChangeEvent(getTenantId(), edgeId,
+            tbClusterService.onEntityStateChange(getTenantId(), edgeId,
                     ComponentLifecycleEvent.UPDATED);
 
             logEntityAction(edgeId, edge,
@@ -277,7 +262,7 @@ public class EdgeController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/customer/public/edge/{edgeId}", method = RequestMethod.POST)
     @ResponseBody
     public Edge assignEdgeToPublicCustomer(@PathVariable(EDGE_ID) String strEdgeId) throws ThingsboardException {
@@ -288,7 +273,7 @@ public class EdgeController extends BaseController {
             Customer publicCustomer = customerService.findOrCreatePublicCustomer(edge.getTenantId());
             Edge savedEdge = checkNotNull(edgeService.assignEdgeToCustomer(getCurrentUser().getTenantId(), edgeId, publicCustomer.getId()));
 
-            tbClusterService.broadcastEntityStateChangeEvent(getTenantId(), edgeId,
+            tbClusterService.onEntityStateChange(getTenantId(), edgeId,
                     ComponentLifecycleEvent.UPDATED);
 
             logEntityAction(edgeId, savedEdge,
@@ -304,7 +289,7 @@ public class EdgeController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/tenant/edges", params = {"pageSize", "page"}, method = RequestMethod.GET)
     @ResponseBody
     public PageData<Edge> getTenantEdges(
@@ -327,7 +312,7 @@ public class EdgeController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/tenant/edgeInfos", params = {"pageSize", "page"}, method = RequestMethod.GET)
     @ResponseBody
     public PageData<EdgeInfo> getTenantEdgeInfos(
@@ -350,7 +335,7 @@ public class EdgeController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/tenant/edges", params = {"edgeName"}, method = RequestMethod.GET)
     @ResponseBody
     public Edge getTenantEdge(@RequestParam String edgeName) throws ThingsboardException {
@@ -362,7 +347,7 @@ public class EdgeController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/edge/{edgeId}/{ruleChainId}/root", method = RequestMethod.POST)
     @ResponseBody
     public Edge setRootRuleChain(@PathVariable(EDGE_ID) String strEdgeId,
@@ -380,7 +365,7 @@ public class EdgeController extends BaseController {
 
             Edge updatedEdge = edgeNotificationService.setEdgeRootRuleChain(getTenantId(), edge, ruleChainId);
 
-            tbClusterService.broadcastEntityStateChangeEvent(updatedEdge.getTenantId(), updatedEdge.getId(), ComponentLifecycleEvent.UPDATED);
+            tbClusterService.onEntityStateChange(updatedEdge.getTenantId(), updatedEdge.getId(), ComponentLifecycleEvent.UPDATED);
 
             logEntityAction(updatedEdge.getId(), updatedEdge, null, ActionType.UPDATED, null);
 
@@ -394,7 +379,7 @@ public class EdgeController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/customer/{customerId}/edges", params = {"pageSize", "page"}, method = RequestMethod.GET)
     @ResponseBody
     public PageData<Edge> getCustomerEdges(
@@ -420,7 +405,7 @@ public class EdgeController extends BaseController {
             }
             if (Authority.CUSTOMER_USER.equals(user.getAuthority())) {
                 for (Edge edge : result.getData()) {
-                    cleanUpLicenseKey(edge);
+                    cleanUpSensitiveData(edge);
                 }
             }
             return checkNotNull(result);
@@ -429,7 +414,7 @@ public class EdgeController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/customer/{customerId}/edgeInfos", params = {"pageSize", "page"}, method = RequestMethod.GET)
     @ResponseBody
     public PageData<EdgeInfo> getCustomerEdgeInfos(
@@ -455,7 +440,7 @@ public class EdgeController extends BaseController {
             }
             if (Authority.CUSTOMER_USER.equals(user.getAuthority())) {
                 for (Edge edge : result.getData()) {
-                    cleanUpLicenseKey(edge);
+                    cleanUpSensitiveData(edge);
                 }
             }
             return checkNotNull(result);
@@ -464,7 +449,7 @@ public class EdgeController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/edges", params = {"edgeIds"}, method = RequestMethod.GET)
     @ResponseBody
     public List<Edge> getEdgesByIds(
@@ -487,7 +472,7 @@ public class EdgeController extends BaseController {
             List<Edge> edges = edgesFuture.get();
             if (Authority.CUSTOMER_USER.equals(user.getAuthority())) {
                 for (Edge edge : edges) {
-                    cleanUpLicenseKey(edge);
+                    cleanUpSensitiveData(edge);
                 }
             }
             return checkNotNull(edges);
@@ -496,7 +481,7 @@ public class EdgeController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/edges", method = RequestMethod.POST)
     @ResponseBody
     public List<Edge> findByQuery(@RequestBody EdgeSearchQuery query) throws ThingsboardException {
@@ -518,7 +503,7 @@ public class EdgeController extends BaseController {
             }).collect(Collectors.toList());
             if (Authority.CUSTOMER_USER.equals(user.getAuthority())) {
                 for (Edge edge : edges) {
-                    cleanUpLicenseKey(edge);
+                    cleanUpSensitiveData(edge);
                 }
             }
             return edges;
@@ -527,7 +512,7 @@ public class EdgeController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/edge/types", method = RequestMethod.GET)
     @ResponseBody
     public List<EntitySubtype> getEdgeTypes() throws ThingsboardException {
@@ -541,7 +526,7 @@ public class EdgeController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/edge/sync/{edgeId}", method = RequestMethod.POST)
     public void syncEdge(@PathVariable("edgeId") String strEdgeId) throws ThingsboardException {
         checkParameter("edgeId", strEdgeId);
@@ -551,7 +536,9 @@ public class EdgeController extends BaseController {
                 edgeId = checkNotNull(edgeId);
                 SecurityUser user = getCurrentUser();
                 TenantId tenantId = user.getTenantId();
-                edgeGrpcService.startSyncProcess(tenantId, edgeId);
+                EdgeGrpcSession session = edgeGrpcService.getEdgeGrpcSessionById(tenantId, edgeId);
+                Edge edge = session.getEdge();
+                syncEdgeService.sync(tenantId, edge);
             } else {
                 throw new ThingsboardException("Edges support disabled", ThingsboardErrorCode.GENERAL);
             }
@@ -560,7 +547,28 @@ public class EdgeController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @RequestMapping(value = "/license/checkInstance", method = RequestMethod.POST)
+    @ResponseBody
+    public Object checkInstance(@RequestBody Object request) throws ThingsboardException {
+        try {
+            return edgeService.checkInstance(request);
+        } catch (Exception e) {
+            throw new ThingsboardException(e, ThingsboardErrorCode.SUBSCRIPTION_VIOLATION);
+        }
+    }
+
+    @RequestMapping(value = "/license/activateInstance", params = {"licenseSecret", "releaseDate"}, method = RequestMethod.POST)
+    @ResponseBody
+    public Object activateInstance(@RequestParam String licenseSecret,
+                                   @RequestParam String releaseDate) throws ThingsboardException {
+        try {
+            return edgeService.activateInstance(licenseSecret, releaseDate);
+        } catch (Exception e) {
+            throw new ThingsboardException(e, ThingsboardErrorCode.SUBSCRIPTION_VIOLATION);
+        }
+    }
+
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/edge/missingToRelatedRuleChains/{edgeId}", method = RequestMethod.GET)
     @ResponseBody
     public String findMissingToRelatedRuleChains(@PathVariable("edgeId") String strEdgeId) throws ThingsboardException {
@@ -575,50 +583,11 @@ public class EdgeController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN')")
-    @PostMapping("/edge/bulk_import")
-    public BulkImportResult<Edge> processEdgeBulkImport(@RequestBody BulkImportRequest request) throws Exception {
-        SecurityUser user = getCurrentUser();
-        RuleChain edgeTemplateRootRuleChain = ruleChainService.getEdgeTemplateRootRuleChain(user.getTenantId());
-        if (edgeTemplateRootRuleChain == null) {
-            throw new DataValidationException("Root edge rule chain is not available!");
-        }
-
-        return edgeBulkImportService.processBulkImport(request, user, importedAssetInfo -> {
-            try {
-                onEdgeCreatedOrUpdated(user.getTenantId(), importedAssetInfo.getEntity(), edgeTemplateRootRuleChain, importedAssetInfo.isUpdated());
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
-    }
-
-    private void cleanUpLicenseKey(Edge edge) {
+    private void cleanUpSensitiveData(Edge edge) {
         edge.setEdgeLicenseKey(null);
-    }
-
-    @RequestMapping(value = "/license/checkInstance", method = RequestMethod.POST)
-    @ResponseBody
-    public ResponseEntity<JsonNode> checkInstance(@RequestBody JsonNode request) throws ThingsboardException {
-        log.debug("Checking instance [{}]", request);
-        try {
-            return edgeLicenseService.checkInstance(request);
-        } catch (Exception e) {
-            log.error("Error occurred: [{}]", e.getMessage(), e);
-            throw new ThingsboardException(e, ThingsboardErrorCode.SUBSCRIPTION_VIOLATION);
-        }
-    }
-
-    @RequestMapping(value = "/license/activateInstance", params = {"licenseSecret", "releaseDate"}, method = RequestMethod.POST)
-    @ResponseBody
-    public ResponseEntity<JsonNode> activateInstance(@RequestParam String licenseSecret,
-                                                     @RequestParam String releaseDate) throws ThingsboardException {
-        log.debug("Activating instance [{}], [{}]", licenseSecret, releaseDate);
-        try {
-            return edgeLicenseService.activateInstance(licenseSecret, releaseDate);
-        } catch (Exception e) {
-            log.error("Error occurred: [{}]", e.getMessage(), e);
-            throw new ThingsboardException(e, ThingsboardErrorCode.SUBSCRIPTION_VIOLATION);
-        }
+        edge.setRoutingKey(null);
+        edge.setSecret(null);
+        edge.setCloudEndpoint(null);
+        edge.setRootRuleChainId(null);
     }
 }

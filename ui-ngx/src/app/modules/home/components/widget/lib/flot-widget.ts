@@ -77,7 +77,7 @@ export class TbFlot {
   private settings: TbFlotSettings;
   private comparisonEnabled: boolean;
 
-  private tooltip: JQuery<any>;
+  private readonly tooltip: JQuery<any>;
 
   private readonly yAxisTickFormatter: TbFlotTicksFormatterFunction;
   private readonly yaxis: TbFlotAxisOptions;
@@ -119,7 +119,6 @@ export class TbFlot {
   private mouseleaveHandler = this.onFlotMouseLeave.bind(this);
   private flotClickHandler = this.onFlotClick.bind(this);
 
-  private readonly showTooltip: boolean;
   private readonly animatedPie: boolean;
   private pieDataAnimationDuration: number;
   private pieData: DatasourceData[];
@@ -149,9 +148,8 @@ export class TbFlot {
     this.chartType = this.chartType || 'line';
     this.settings = ctx.settings as TbFlotSettings;
     this.utils = this.ctx.$injector.get(UtilsService);
-    this.showTooltip = isDefined(this.settings.showTooltip) ? this.settings.showTooltip : true;
-    this.tooltip = this.showTooltip ? $('#flot-series-tooltip') : null;
-    if (this.tooltip?.length === 0) {
+    this.tooltip = $('#flot-series-tooltip');
+    if (this.tooltip.length === 0) {
       this.tooltip = this.createTooltipElement();
     }
 
@@ -280,7 +278,7 @@ export class TbFlot {
         };
       }
 
-      if ((this.chartType === 'line' || this.chartType === 'bar') && isFinite(this.settings.thresholdsLineWidth)) {
+      if (this.chartType === 'line' && isFinite(this.settings.thresholdsLineWidth)) {
         this.options.grid.markingsLineWidth = this.settings.thresholdsLineWidth;
       }
 
@@ -1171,7 +1169,7 @@ export class TbFlot {
   }
 
   private onFlotHover(e: any, pos: JQueryPlotPoint, item: TbFlotPlotItem) {
-    if (!this.plot || !this.tooltip) {
+    if (!this.plot) {
       return;
     }
     if ((!this.tooltipIndividual || item) && !this.ctx.isEdit) {

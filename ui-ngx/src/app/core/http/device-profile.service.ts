@@ -21,23 +21,18 @@ import { defaultHttpOptionsFromConfig, RequestConfig } from './http-utils';
 import { Observable, of, throwError } from 'rxjs';
 import { PageData } from '@shared/models/page/page-data';
 import { DeviceProfile, DeviceProfileInfo, DeviceTransportType } from '@shared/models/device.models';
-import { deepClone, isDefinedAndNotNull, isEmptyStr } from '@core/utils';
-import {
-  ObjectLwM2M,
-  securityConfigMode,
-  ServerSecurityConfig,
-  ServerSecurityConfigInfo
-} from '@home/components/profile/device/lwm2m/lwm2m-profile-config.models';
+import { isDefinedAndNotNull, isEmptyStr } from '@core/utils';
+import { ObjectLwM2M, ServerSecurityConfig } from '@home/components/profile/device/lwm2m/lwm2m-profile-config.models';
 import { SortOrder } from '@shared/models/page/sort-order';
 import { OtaPackageService } from '@core/http/ota-package.service';
-import { map, mergeMap, tap } from 'rxjs/operators';
+import { mergeMap, tap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DeviceProfileService {
 
-  private lwm2mBootstrapSecurityInfoInMemoryCache = new Map<boolean, ServerSecurityConfigInfo>();
+  private lwm2mBootstrapSecurityInfoInMemoryCache = new Map<boolean, ServerSecurityConfig>();
 
   constructor(
     private http: HttpClient,
@@ -65,43 +60,18 @@ export class DeviceProfileService {
     return this.http.get<Array<ObjectLwM2M>>(url, defaultHttpOptionsFromConfig(config));
   }
 
-  public getLwm2mBootstrapSecurityInfo(isBootstrapServer: boolean, config?: RequestConfig): Observable<ServerSecurityConfigInfo> {
+  public getLwm2mBootstrapSecurityInfo(isBootstrapServer: boolean, config?: RequestConfig): Observable<ServerSecurityConfig> {
     const securityConfig = this.lwm2mBootstrapSecurityInfoInMemoryCache.get(isBootstrapServer);
     if (securityConfig) {
       return of(securityConfig);
     } else {
-      return this.http.get<ServerSecurityConfigInfo>(
+      return this.http.get<ServerSecurityConfig>(
         `/api/lwm2m/deviceProfile/bootstrap/${isBootstrapServer}`,
         defaultHttpOptionsFromConfig(config)
       ).pipe(
         tap(serverConfig => this.lwm2mBootstrapSecurityInfoInMemoryCache.set(isBootstrapServer, serverConfig))
       );
     }
-  }
-
-  public getLwm2mBootstrapSecurityInfoBySecurityType(isBootstrapServer: boolean, securityMode = securityConfigMode.NO_SEC,
-                                                     config?: RequestConfig): Observable<ServerSecurityConfig> {
-    return this.getLwm2mBootstrapSecurityInfo(isBootstrapServer, config).pipe(
-      map(securityConfig => {
-        const serverSecurityConfigInfo = deepClone(securityConfig);
-        switch (securityMode) {
-          case securityConfigMode.PSK:
-            serverSecurityConfigInfo.port = serverSecurityConfigInfo.securityPort;
-            serverSecurityConfigInfo.host = serverSecurityConfigInfo.securityHost;
-            serverSecurityConfigInfo.serverPublicKey = '';
-            break;
-          case securityConfigMode.RPK:
-          case securityConfigMode.X509:
-            serverSecurityConfigInfo.port = serverSecurityConfigInfo.securityPort;
-            serverSecurityConfigInfo.host = serverSecurityConfigInfo.securityHost;
-            break;
-          case securityConfigMode.NO_SEC:
-            serverSecurityConfigInfo.serverPublicKey = '';
-            break;
-        }
-        return serverSecurityConfigInfo;
-      })
-    );
   }
 
   public getLwm2mObjectsPage(pageLink: PageLink, config?: RequestConfig): Observable<Array<ObjectLwM2M>> {

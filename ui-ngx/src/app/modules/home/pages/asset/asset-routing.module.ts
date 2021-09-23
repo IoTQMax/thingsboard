@@ -26,7 +26,7 @@ const routes: Routes = [
     path: 'assets',
     component: EntitiesTableComponent,
     data: {
-      auth: [Authority.TENANT_ADMIN, Authority.CUSTOMER_USER],
+      auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA, Authority.CUSTOMER_USER], //THERA
       title: 'asset.assets',
       assetsType: 'tenant',
       breadcrumb: {

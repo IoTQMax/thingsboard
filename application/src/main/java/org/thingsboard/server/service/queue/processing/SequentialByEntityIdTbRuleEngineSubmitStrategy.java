@@ -49,7 +49,7 @@ public abstract class SequentialByEntityIdTbRuleEngineSubmitStrategy extends Abs
     public void submitAttempt(BiConsumer<UUID, TbProtoQueueMsg<TransportProtos.ToRuleEngineMsg>> msgConsumer) {
         this.msgConsumer = msgConsumer;
         entityIdToListMap.forEach((entityId, queue) -> {
-            IdMsgPair<TransportProtos.ToRuleEngineMsg> msg = queue.peek();
+            IdMsgPair msg = queue.peek();
             if (msg != null) {
                 msgConsumer.accept(msg.uuid, msg.msg);
             }
@@ -68,9 +68,9 @@ public abstract class SequentialByEntityIdTbRuleEngineSubmitStrategy extends Abs
         if (entityId != null) {
             Queue<IdMsgPair<TransportProtos.ToRuleEngineMsg>> queue = entityIdToListMap.get(entityId);
             if (queue != null) {
-                IdMsgPair<TransportProtos.ToRuleEngineMsg> next = null;
+                IdMsgPair next = null;
                 synchronized (queue) {
-                    IdMsgPair<TransportProtos.ToRuleEngineMsg> expected = queue.peek();
+                    IdMsgPair expected = queue.peek();
                     if (expected != null && expected.uuid.equals(id)) {
                         queue.poll();
                         next = queue.peek();

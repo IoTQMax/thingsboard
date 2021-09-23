@@ -121,12 +121,19 @@ export class WidgetsBundlesTableConfigResolver implements Resolve<EntityTableCon
     this.config.entitySelectionEnabled = (widgetsBundle) => this.isWidgetsBundleEditable(widgetsBundle, authUser.authority);
     this.config.detailsReadonly = (widgetsBundle) => !this.isWidgetsBundleEditable(widgetsBundle, authUser.authority);
     const authState = getCurrentAuthState(this.store);
-    this.config.entitiesFetchFunction = pageLink => this.widgetsService.getWidgetBundles(pageLink);
+    this.config.entitiesFetchFunction = pageLink => this.widgetsService.getWidgetBundles(pageLink).pipe(
+      map((widgetBundles) => {
+        if (!authState.edgesSupportEnabled) {
+          widgetBundles.data = widgetBundles.data.filter(widgetBundle => widgetBundle.alias !== 'edge_widgets');
+        }
+        return widgetBundles;
+      })
+    );
     return this.config;
   }
 
   isWidgetsBundleEditable(widgetsBundle: WidgetsBundle, authority: Authority): boolean {
-    if (authority === Authority.TENANT_ADMIN) {
+    if (authority === Authority.TENANT_ADMIN || authority === Authority.TENANT_INSTALL || authority === Authority.TENANT_INTEGRA) { //THERA
       return widgetsBundle && widgetsBundle.tenantId && widgetsBundle.tenantId.id !== NULL_UUID;
     } else {
       return authority === Authority.SYS_ADMIN;

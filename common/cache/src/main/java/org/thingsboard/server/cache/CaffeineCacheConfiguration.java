@@ -27,7 +27,6 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.caffeine.CaffeineCache;
 import org.springframework.cache.support.SimpleCacheManager;
-import org.springframework.cache.transaction.TransactionAwareCacheManagerProxy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -48,14 +47,9 @@ public class CaffeineCacheConfiguration {
 
     private Map<String, CacheSpecs> specs;
 
-
-    /**
-     * Transaction aware CaffeineCache implementation with TransactionAwareCacheManagerProxy
-     * to synchronize cache put/evict operations with ongoing Spring-managed transactions.
-     */
     @Bean
     public CacheManager cacheManager() {
-        log.trace("Initializing cache: {} specs {}", Arrays.toString(RemovalCause.values()), specs);
+        log.trace("Initializing cache: {}", Arrays.toString(RemovalCause.values()));
         SimpleCacheManager manager = new SimpleCacheManager();
         if (specs != null) {
             List<CaffeineCache> caches =
@@ -65,11 +59,7 @@ public class CaffeineCacheConfiguration {
                             .collect(Collectors.toList());
             manager.setCaches(caches);
         }
-
-        //SimpleCacheManager is not a bean (will be wrapped), so call initializeCaches manually
-        manager.initializeCaches();
-
-        return new TransactionAwareCacheManagerProxy(manager);
+        return manager;
     }
 
     private CaffeineCache buildCache(String name, CacheSpecs cacheSpec) {

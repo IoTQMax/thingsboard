@@ -54,7 +54,7 @@ const routes: Routes = [
         path: '',
         component: EntitiesTableComponent,
         data: {
-          auth: [Authority.TENANT_ADMIN, Authority.CUSTOMER_USER],
+          auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA, Authority.CUSTOMER_USER], //THERA
           edgesType: 'tenant'
         },
         resolve: {
@@ -65,7 +65,7 @@ const routes: Routes = [
         path: ':edgeId/assets',
         component: EntitiesTableComponent,
         data: {
-          auth: [Authority.TENANT_ADMIN, Authority.CUSTOMER_USER],
+          auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA, Authority.CUSTOMER_USER], //THERA
           assetsType: 'edge',
           breadcrumb: {
             label: 'edge.assets',
@@ -80,7 +80,7 @@ const routes: Routes = [
         path: ':edgeId/devices',
         component: EntitiesTableComponent,
         data: {
-          auth: [Authority.TENANT_ADMIN, Authority.CUSTOMER_USER],
+          auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA, Authority.CUSTOMER_USER], //THERA
           devicesType: 'edge',
           breadcrumb: {
             label: 'edge.devices',
@@ -95,7 +95,7 @@ const routes: Routes = [
         path: ':edgeId/entityViews',
         component: EntitiesTableComponent,
         data: {
-          auth: [Authority.TENANT_ADMIN, Authority.CUSTOMER_USER],
+          auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA, Authority.CUSTOMER_USER], //THERA
           entityViewsType: 'edge',
           breadcrumb: {
             label: 'edge.entity-views',
@@ -119,7 +119,7 @@ const routes: Routes = [
             path: '',
             component: EntitiesTableComponent,
             data: {
-              auth: [Authority.TENANT_ADMIN, Authority.CUSTOMER_USER],
+              auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA, Authority.CUSTOMER_USER], //THERA
               dashboardsType: 'edge'
             },
             resolve: {
@@ -134,7 +134,7 @@ const routes: Routes = [
                 labelFunction: dashboardBreadcumbLabelFunction,
                 icon: 'dashboard'
               } as BreadCrumbConfig<DashboardPageComponent>,
-              auth: [Authority.TENANT_ADMIN, Authority.CUSTOMER_USER],
+              auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA, Authority.CUSTOMER_USER], //THERA
               title: 'edge.dashboard',
               widgetEditMode: false
             },
@@ -157,7 +157,7 @@ const routes: Routes = [
             path: '',
             component: EntitiesTableComponent,
             data: {
-              auth: [Authority.TENANT_ADMIN],
+              auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
               title: 'edge.rulechains',
               ruleChainsType: 'edge'
             },
@@ -174,7 +174,7 @@ const routes: Routes = [
                 labelFunction: ruleChainBreadcumbLabelFunction,
                 icon: 'settings_ethernet'
               } as BreadCrumbConfig<RuleChainPageComponent>,
-              auth: [Authority.TENANT_ADMIN],
+              auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
               title: 'rulechain.edge-rulechain',
               import: false,
               ruleChainType: RuleChainType.EDGE
@@ -202,7 +202,7 @@ const routes: Routes = [
       {
         path: '',
         data: {
-          auth: [Authority.TENANT_ADMIN, Authority.CUSTOMER_USER],
+          auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA, Authority.CUSTOMER_USER], //THERA
           redirectTo: '/edgeManagement/ruleChains'
         }
       },
@@ -219,7 +219,7 @@ const routes: Routes = [
             path: '',
             component: EntitiesTableComponent,
             data: {
-              auth: [Authority.TENANT_ADMIN],
+              auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
               title: 'edge.rulechain-templates',
               ruleChainsType: 'edges'
             },
@@ -236,7 +236,7 @@ const routes: Routes = [
                 labelFunction: ruleChainBreadcumbLabelFunction,
                 icon: 'settings_ethernet'
               } as BreadCrumbConfig<RuleChainPageComponent>,
-              auth: [Authority.TENANT_ADMIN],
+              auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
               title: 'rulechain.edge-rulechain',
               import: false,
               ruleChainType: RuleChainType.EDGE
@@ -258,7 +258,7 @@ const routes: Routes = [
                 labelFunction: importRuleChainBreadcumbLabelFunction,
                 icon: 'settings_ethernet'
               } as BreadCrumbConfig<RuleChainPageComponent>,
-              auth: [Authority.TENANT_ADMIN],
+              auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
               title: 'rulechain.edge-rulechain',
               import: true,
               ruleChainType: RuleChainType.EDGE

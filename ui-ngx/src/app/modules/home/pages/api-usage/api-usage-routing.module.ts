@@ -24,7 +24,7 @@ const routes: Routes = [
     path: 'usage',
     component: ApiUsageComponent,
     data: {
-      auth: [Authority.TENANT_ADMIN],
+      auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
       title: 'api-usage.api-usage',
       breadcrumb: {
         label: 'api-usage.api-usage',

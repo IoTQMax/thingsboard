@@ -21,4 +21,6 @@ public interface LwM2MTelemetryLogService {
 
     void log(LwM2mClient client, String msg);
 
+    void log(String registrationId, String msg);
+
 }

@@ -135,7 +135,7 @@ const routes: Routes = [
         path: '',
         component: EntitiesTableComponent,
         data: {
-          auth: [Authority.TENANT_ADMIN],
+          auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
           title: 'rulechain.rulechains',
           ruleChainsType: 'tenant'
         },
@@ -152,7 +152,7 @@ const routes: Routes = [
             labelFunction: ruleChainBreadcumbLabelFunction,
             icon: 'settings_ethernet'
           } as BreadCrumbConfig<RuleChainPageComponent>,
-          auth: [Authority.TENANT_ADMIN],
+          auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
           title: 'rulechain.rulechain',
           import: false,
           ruleChainType: RuleChainType.CORE
@@ -174,7 +174,7 @@ const routes: Routes = [
             labelFunction: importRuleChainBreadcumbLabelFunction,
             icon: 'settings_ethernet'
           } as BreadCrumbConfig<RuleChainPageComponent>,
-          auth: [Authority.TENANT_ADMIN],
+          auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
           title: 'rulechain.rulechain',
           import: true,
           ruleChainType: RuleChainType.CORE

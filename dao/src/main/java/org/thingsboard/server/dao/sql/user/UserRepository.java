@@ -41,6 +41,32 @@ public interface UserRepository extends PagingAndSortingRepository<UserEntity, U
                                           @Param("authority") Authority authority,
                                           Pageable pageable);
 
+/* THERA BEGIN */
+     @Query("SELECT u FROM UserEntity u WHERE u.tenantId = :tenantId " +
+            "AND u.customerId = :customerId AND (u.authority = :authority1 " +
+            "OR u.authority = :authority2) " +
+            "AND LOWER(u.searchText) LIKE LOWER(CONCAT(:searchText, '%'))")
+     Page<UserEntity> findUsersByAuthority2(@Param("tenantId") UUID tenantId,
+                                            @Param("customerId") UUID customerId,
+                                            @Param("searchText") String searchText,
+                                            @Param("authority1") Authority authority1,
+                                            @Param("authority2") Authority authority2,
+                                            Pageable pageable);
+
+
+        @Query("SELECT u FROM UserEntity u WHERE u.tenantId = :tenantId " +
+                "AND u.customerId = :customerId AND (u.authority = :authority1 " +
+                "OR u.authority = :authority2 OR u.authority = :authority3) " +
+                "AND LOWER(u.searchText) LIKE LOWER(CONCAT(:searchText, '%'))")
+        Page<UserEntity> findUsersByAuthority3(@Param("tenantId") UUID tenantId,
+                                                @Param("customerId") UUID customerId,
+                                                @Param("searchText") String searchText,
+                                                @Param("authority1") Authority authority1,
+                                                @Param("authority2") Authority authority2,
+                                                @Param("authority3") Authority authority3,
+                                                Pageable pageable);                                            
+/* THERA END */                                            
+
     @Query("SELECT u FROM UserEntity u WHERE u.tenantId = :tenantId " +
             "AND LOWER(u.searchText) LIKE LOWER(CONCAT(:searchText, '%'))")
     Page<UserEntity> findByTenantId(@Param("tenantId") UUID tenantId,

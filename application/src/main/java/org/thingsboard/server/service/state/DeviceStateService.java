@@ -18,7 +18,6 @@ package org.thingsboard.server.service.state;
 import org.springframework.context.ApplicationListener;
 import org.thingsboard.server.common.data.Device;
 import org.thingsboard.server.common.data.id.DeviceId;
-import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.queue.discovery.event.PartitionChangeEvent;
 import org.thingsboard.server.gen.transport.TransportProtos;
 import org.thingsboard.server.common.msg.queue.TbCallback;
@@ -28,13 +27,19 @@ import org.thingsboard.server.common.msg.queue.TbCallback;
  */
 public interface DeviceStateService extends ApplicationListener<PartitionChangeEvent> {
 
-    void onDeviceConnect(TenantId tenantId, DeviceId deviceId);
+    void onDeviceAdded(Device device);
 
-    void onDeviceActivity(TenantId tenantId, DeviceId deviceId, long lastReportedActivityTime);
+    void onDeviceUpdated(Device device);
 
-    void onDeviceDisconnect(TenantId tenantId, DeviceId deviceId);
+    void onDeviceDeleted(Device device);
 
-    void onDeviceInactivityTimeoutUpdate(TenantId tenantId, DeviceId deviceId, long inactivityTimeout);
+    void onDeviceConnect(DeviceId deviceId);
+
+    void onDeviceActivity(DeviceId deviceId, long lastReportedActivityTime);
+
+    void onDeviceDisconnect(DeviceId deviceId);
+
+    void onDeviceInactivityTimeoutUpdate(DeviceId deviceId, long inactivityTimeout);
 
     void onQueueMsg(TransportProtos.DeviceStateServiceMsgProto proto, TbCallback bytes);
 

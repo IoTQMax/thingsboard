@@ -20,16 +20,16 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.thingsboard.msa</groupId>
-        <version>3.3.2-SNAPSHOT</version>
+        <version>3.3.0-SNAPSHOT</version>
         <artifactId>transport</artifactId>
     </parent>
     <groupId>org.thingsboard.msa.transport</groupId>
     <artifactId>lwm2m</artifactId>
     <packaging>pom</packaging>
 
-    <name>ThingsBoard LWM2M Transport Microservice</name>
+    <name>Effi.ai LWM2M Transport Microservice</name>
     <url>https://thingsboard.io</url>
-    <description>ThingsBoard LWM2M Transport Microservice</description>
+    <description>Effi.ai LWM2M Transport Microservice</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

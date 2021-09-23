@@ -224,7 +224,7 @@ public abstract class BaseEntityServiceTest extends AbstractServiceTest {
         List<Edge> edges = new ArrayList<>();
         for (int i = 0; i < 97; i++) {
             Edge edge = createEdge(i, "default");
-            edges.add(edgeService.saveEdge(edge, true));
+            edges.add(edgeService.saveEdge(edge));
         }
 
         EdgeTypeFilter filter = new EdgeTypeFilter();
@@ -262,7 +262,7 @@ public abstract class BaseEntityServiceTest extends AbstractServiceTest {
     public void testCountHierarchicalEntitiesByEdgeSearchQuery() throws InterruptedException {
         for (int i = 0; i < 5; i++) {
             Edge edge = createEdge(i, "type" + i);
-            edge = edgeService.saveEdge(edge, true);
+            edge = edgeService.saveEdge(edge);
             //TO make sure devices have different created time
             Thread.sleep(1);
 

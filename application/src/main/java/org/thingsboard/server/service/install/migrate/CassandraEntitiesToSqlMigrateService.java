@@ -70,7 +70,7 @@ public class CassandraEntitiesToSqlMigrateService implements EntitiesMigrateServ
                 table.migrateToSql(cluster.getSession(), conn);
             }
         } catch (Exception e) {
-            log.error("Unexpected error during ThingsBoard entities data migration!", e);
+            log.error("Unexpected error during Effi.ai entities data migration!", e);
             throw e;
         }
         entityDatabaseSchemaService.createDatabaseIndexes();
@@ -163,6 +163,8 @@ public class CassandraEntitiesToSqlMigrateService implements EntitiesMigrateServ
         new CassandraToSqlTable("customer",
                 idColumn("id"),
                 idColumn("tenant_id"),
+                idColumn("integrator_id"), //THERA
+                idColumn("installer_id"), //THERA
                 stringColumn("title"),
                 stringColumn("search_text"),
                 stringColumn("country"),

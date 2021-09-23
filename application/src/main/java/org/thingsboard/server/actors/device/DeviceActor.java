@@ -28,7 +28,6 @@ import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.msg.TbActorMsg;
 import org.thingsboard.server.common.msg.timeout.DeviceActorServerSideRpcTimeoutMsg;
 import org.thingsboard.server.service.rpc.FromDeviceRpcResponseActorMsg;
-import org.thingsboard.server.service.rpc.RemoveRpcActorMsg;
 import org.thingsboard.server.service.rpc.ToDeviceRpcRequestActorMsg;
 import org.thingsboard.server.service.transport.msg.TransportToDeviceActorMsgWrapper;
 
@@ -47,7 +46,7 @@ public class DeviceActor extends ContextAwareActor {
         super.init(ctx);
         log.debug("[{}][{}] Starting device actor.", processor.tenantId, processor.deviceId);
         try {
-            processor.init(ctx);
+            processor.initSessionTimeout(ctx);
             log.debug("[{}][{}] Device actor started.", processor.tenantId, processor.deviceId);
         } catch (Exception e) {
             log.warn("[{}][{}] Unknown failure", processor.tenantId, processor.deviceId, e);
@@ -84,9 +83,6 @@ public class DeviceActor extends ContextAwareActor {
                 break;
             case DEVICE_EDGE_UPDATE_TO_DEVICE_ACTOR_MSG:
                 processor.processEdgeUpdate((DeviceEdgeUpdateMsg) msg);
-                break;
-            case REMOVE_RPC_TO_DEVICE_ACTOR_MSG:
-                processor.processRemoveRpc(ctx, (RemoveRpcActorMsg) msg);
                 break;
             default:
                 return false;

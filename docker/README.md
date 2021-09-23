@@ -1,15 +1,15 @@
-# Docker configuration for ThingsBoard Microservices
+# Docker configuration for Effi.ai Microservices
 
-This folder containing scripts and Docker Compose configurations to run ThingsBoard in Microservices mode.
+This folder containing scripts and Docker Compose configurations to run Effi.ai in Microservices mode.
 
 ## Prerequisites
 
-ThingsBoard Microservices are running in dockerized environment.
+Effi.ai Microservices are running in dockerized environment.
 Before starting please make sure [Docker CE](https://docs.docker.com/install/) and [Docker Compose](https://docs.docker.com/compose/install/) are installed in your system.
 
 ## Installation
 
-Before performing initial installation you can configure the type of database to be used with ThingsBoard.
+Before performing initial installation you can configure the type of database to be used with Effi.ai.
 In order to set database type change the value of `DATABASE` variable in `.env` file to one of the following:
 
 - `postgres` - use PostgreSQL database;
@@ -43,19 +43,19 @@ $ ./docker-start-services.sh
 `
 
 After a while when all services will be successfully started you can open `http://{your-host-ip}` in you browser (for ex. `http://localhost`).
-You should see ThingsBoard login page.
+You should see Effi.ai login page.
 
 Use the following default credentials:
 
-- **System Administrator**: sysadmin@thingsboard.org / sysadmin
+- **System Administrator**: sysadmin@effi.ai / sysadmin
 
 If you installed DataBase with demo data (using `--loadDemo` flag) you can also use the following credentials:
 
-- **Tenant Administrator**: tenant@thingsboard.org / tenant
-- **Customer User**: customer@thingsboard.org / customer
+- **Tenant Administrator**: tenant@effi.ai / tenant
+- **Customer User**: customer@effi.ai / customer
 
 In case of any issues you can examine service logs for errors.
-For example to see ThingsBoard node logs execute the following command:
+For example to see Effi.ai node logs execute the following command:
 
 `
 $ docker-compose logs -f tb-core1 tb-core2 tb-rule-engine1 tb-rule-engine2 tb-mqtt-transport1 tb-mqtt-transport2

@@ -14,14 +14,21 @@
 /// limitations under the License.
 ///
 
-import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
+import {
+  HttpErrorResponse,
+  HttpEvent,
+  HttpHandler,
+  HttpInterceptor,
+  HttpRequest,
+  HttpResponseBase
+} from '@angular/common/http';
 import { Observable } from 'rxjs/internal/Observable';
 import { Inject, Injectable } from '@angular/core';
 import { AuthService } from '@core/auth/auth.service';
 import { Constants } from '@shared/models/constants';
 import { InterceptorHttpParams } from './interceptor-http-params';
-import { catchError, delay, finalize, mergeMap, switchMap } from 'rxjs/operators';
-import { of, throwError } from 'rxjs';
+import { catchError, delay, mergeMap, switchMap, tap } from 'rxjs/operators';
+import { throwError, of } from 'rxjs';
 import { InterceptorConfig } from './interceptor-config';
 import { Store } from '@ngrx/store';
 import { AppState } from '@core/core.state';
@@ -40,7 +47,7 @@ export class GlobalHttpInterceptor implements HttpInterceptor {
 
   private internalUrlPrefixes = [
     '/api/auth/token',
-    '/api/rpc'
+    '/api/plugins/rpc'
   ];
 
   private activeRequests = 0;
@@ -54,26 +61,19 @@ export class GlobalHttpInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     if (req.url.startsWith('/api/')) {
       const config = this.getInterceptorConfig(req);
-      this.updateLoadingState(config, true);
-      let observable$: Observable<HttpEvent<any>>;
+      const isLoading = !this.isInternalUrlPrefix(req.url);
+      this.updateLoadingState(config, isLoading);
       if (this.isTokenBasedAuthEntryPoint(req.url)) {
         if (!AuthService.getJwtToken() && !this.authService.refreshTokenPending()) {
-          observable$ = this.handleResponseError(req, next, new HttpErrorResponse({error: {message: 'Unauthorized!'}, status: 401}));
+          return this.handleResponseError(req, next, new HttpErrorResponse({error: {message: 'Unauthorized!'}, status: 401}));
         } else if (!AuthService.isJwtTokenValid()) {
-          observable$ = this.handleResponseError(req, next, new HttpErrorResponse({error: {refreshTokenPending: true}}));
+          return this.handleResponseError(req, next, new HttpErrorResponse({error: {refreshTokenPending: true}}));
         } else {
-          observable$ = this.jwtIntercept(req, next);
+          return this.jwtIntercept(req, next);
         }
       } else {
-        observable$ = this.handleRequest(req, next);
+        return this.handleRequest(req, next);
       }
-      return observable$.pipe(
-        finalize(() => {
-          if (req.url.startsWith('/api/')) {
-            this.updateLoadingState(config, false);
-          }
-        })
-      );
     } else {
       return next.handle(req);
     }
@@ -84,20 +84,43 @@ export class GlobalHttpInterceptor implements HttpInterceptor {
     if (newReq) {
       return this.handleRequest(newReq, next);
     } else {
-      return throwError(new Error('Could not get JWT token from store.'));
+      return this.handleRequestError(req, new Error('Could not get JWT token from store.'));
     }
   }
 
   private handleRequest(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(req).pipe(
+      tap((event: HttpEvent<any>) => {
+        if (event instanceof HttpResponseBase) {
+          this.handleResponse(req, event as HttpResponseBase);
+        }
+      }),
       catchError((err) => {
         const errorResponse = err as HttpErrorResponse;
         return this.handleResponseError(req, next, errorResponse);
       }));
   }
 
+  private handleRequestError(req: HttpRequest<any>, err): Observable<HttpEvent<any>> {
+    const config = this.getInterceptorConfig(req);
+    if (req.url.startsWith('/api/')) {
+      this.updateLoadingState(config, false);
+    }
+    return throwError(err);
+  }
+
+  private handleResponse(req: HttpRequest<any>, response: HttpResponseBase) {
+    const config = this.getInterceptorConfig(req);
+    if (req.url.startsWith('/api/')) {
+      this.updateLoadingState(config, false);
+    }
+  }
+
   private handleResponseError(req: HttpRequest<any>, next: HttpHandler, errorResponse: HttpErrorResponse): Observable<HttpEvent<any>> {
     const config = this.getInterceptorConfig(req);
+    if (req.url.startsWith('/api/')) {
+      this.updateLoadingState(config, false);
+    }
     let unhandled = false;
     const ignoreErrors = config.ignoreErrors;
     const resendRequest = config.resendRequest;
@@ -115,11 +138,14 @@ export class GlobalHttpInterceptor implements HttpInterceptor {
       }
     } else if (errorResponse.status === 403) {
       if (!ignoreErrors) {
+        alert("Acá el error:");
+        alert(req.url);
+        alert(errorResponse.message);
         this.dialogService.forbidden();
       }
     } else if (errorResponse.status === 0 || errorResponse.status === -1) {
         this.showError('Unable to connect');
-    } else if (!(req.url.startsWith('/api/rpc') || req.url.startsWith('/api/plugins/rpc'))) {
+    } else if (!req.url.startsWith('/api/plugins/rpc')) {
       if (errorResponse.status === 404) {
         if (!ignoreErrors) {
           this.showError(req.method + ': ' + req.url + '<br/>' +
@@ -235,16 +261,11 @@ export class GlobalHttpInterceptor implements HttpInterceptor {
   }
 
   private getInterceptorConfig(req: HttpRequest<any>): InterceptorConfig {
-    let config: InterceptorConfig;
     if (req.params && req.params instanceof InterceptorHttpParams) {
-      config = (req.params as InterceptorHttpParams).interceptorConfig;
+      return (req.params as InterceptorHttpParams).interceptorConfig;
     } else {
-      config = new InterceptorConfig(false, false);
+      return new InterceptorConfig(false, false);
     }
-    if (this.isInternalUrlPrefix(req.url)) {
-      config.ignoreLoading = true;
-    }
-    return config;
   }
 
   private showError(error: string, timeout: number = 0) {

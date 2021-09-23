@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -59,8 +59,14 @@ public abstract class SqlAbstractDatabaseSchemaService implements DatabaseSchema
 
     @Override
     public void createDatabaseSchema(boolean createIndexes) throws Exception {
+
         log.info("Installing SQL DataBase schema part: " + schemaSql);
-        executeQueryFromFile(schemaSql);
+
+        Path schemaFile = Paths.get(installScripts.getDataDir(), SQL_DIR, schemaSql);
+        try (Connection conn = DriverManager.getConnection(dbUrl, dbUserName, dbPassword)) {
+            String sql = new String(Files.readAllBytes(schemaFile), Charset.forName("UTF-8"));
+            conn.createStatement().execute(sql); //NOSONAR, ignoring because method used to load initial thingsboard database schema
+        }
 
         if (createIndexes) {
             this.createDatabaseIndexes();
@@ -71,15 +77,11 @@ public abstract class SqlAbstractDatabaseSchemaService implements DatabaseSchema
     public void createDatabaseIndexes() throws Exception {
         if (schemaIdxSql != null) {
             log.info("Installing SQL DataBase schema indexes part: " + schemaIdxSql);
-            executeQueryFromFile(schemaIdxSql);
-        }
-    }
-
-    void executeQueryFromFile(String schemaIdxSql) throws SQLException, IOException {
-        Path schemaIdxFile = Paths.get(installScripts.getDataDir(), SQL_DIR, schemaIdxSql);
-        String sql = Files.readString(schemaIdxFile);
-        try (Connection conn = DriverManager.getConnection(dbUrl, dbUserName, dbPassword)) {
-            conn.createStatement().execute(sql); //NOSONAR, ignoring because method used to load initial thingsboard database schema
+            Path schemaIdxFile = Paths.get(installScripts.getDataDir(), SQL_DIR, schemaIdxSql);
+            try (Connection conn = DriverManager.getConnection(dbUrl, dbUserName, dbPassword)) {
+                String sql = new String(Files.readAllBytes(schemaIdxFile), Charset.forName("UTF-8"));
+                conn.createStatement().execute(sql); //NOSONAR, ignoring because method used to load initial thingsboard database schema
+            }
         }
     }
 
@@ -89,8 +91,7 @@ public abstract class SqlAbstractDatabaseSchemaService implements DatabaseSchema
             log.info("Successfully executed query: {}", query);
             Thread.sleep(5000);
         } catch (InterruptedException | SQLException e) {
-            log.error("Failed to execute query: {} due to: {}", query, e.getMessage());
-            throw new RuntimeException("Failed to execute query: " + query, e);
+            log.info("Failed to execute query: {} due to: {}", query, e.getMessage());
         }
     }
 

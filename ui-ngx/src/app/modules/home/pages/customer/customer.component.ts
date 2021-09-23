@@ -14,7 +14,7 @@
 /// limitations under the License.
 ///
 
-import { ChangeDetectorRef, Component, Inject } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { AppState } from '@core/core.state';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -26,6 +26,10 @@ import { EntityTableConfig } from '@home/models/entity/entities-table-config.mod
 import { isDefinedAndNotNull } from '@core/utils';
 import { getCurrentAuthState } from '@core/auth/auth.selectors';
 import { AuthState } from '@core/auth/auth.models';
+import { EntityType } from '@shared/models/entity-type.models';
+import { Authority } from '@shared/models/authority.enum';
+import { getCurrentAuthUser } from '@core/auth/auth.selectors';
+import { AuthUser } from '@shared/models/user.model';
 
 @Component({
   selector: 'tb-customer',
@@ -33,18 +37,21 @@ import { AuthState } from '@core/auth/auth.models';
   styleUrls: ['./customer.component.scss']
 })
 export class CustomerComponent extends ContactBasedComponent<Customer> {
-
+  
+  authUser: AuthUser;
+  authorities = Authority;
+  
   isPublic = false;
-
+  entityType = EntityType;
   authState: AuthState = getCurrentAuthState(this.store);
 
   constructor(protected store: Store<AppState>,
               protected translate: TranslateService,
               @Inject('entity') protected entityValue: Customer,
               @Inject('entitiesTableConfig') protected entitiesTableConfigValue: EntityTableConfig<Customer>,
-              protected fb: FormBuilder,
-              protected cd: ChangeDetectorRef) {
-    super(store, fb, entityValue, entitiesTableConfigValue, cd);
+              protected fb: FormBuilder) {
+    super(store, fb, entityValue, entitiesTableConfigValue);
+    this.authUser = getCurrentAuthUser(store);
   }
 
   hideDelete() {
@@ -59,6 +66,11 @@ export class CustomerComponent extends ContactBasedComponent<Customer> {
     return this.fb.group(
       {
         title: [entity ? entity.title : '', [Validators.required]],
+        // integratorId: [this.isAdd ? CONTAINS_TYPE : this.data.relation.type, [Validators.required]],
+        
+        integratorId: [entity && entity.integratorId ? entity.integratorId : ''],
+        installerId: [entity && entity.installerId ? entity.installerId : ''],
+        
         additionalInfo: this.fb.group(
           {
             description: [entity && entity.additionalInfo ? entity.additionalInfo.description : ''],
@@ -74,6 +86,10 @@ export class CustomerComponent extends ContactBasedComponent<Customer> {
   updateEntityForm(entity: Customer) {
     this.isPublic = entity.additionalInfo && entity.additionalInfo.isPublic;
     this.entityForm.patchValue({title: entity.title});
+
+    this.entityForm.patchValue({integratorId: entity.integratorId}); //THERA
+    this.entityForm.patchValue({installerId: entity.installerId});   //THERA
+
     this.entityForm.patchValue({additionalInfo: {description: entity.additionalInfo ? entity.additionalInfo.description : ''}});
     this.entityForm.patchValue({additionalInfo:
         {homeDashboardId: entity.additionalInfo ? entity.additionalInfo.homeDashboardId : null}});

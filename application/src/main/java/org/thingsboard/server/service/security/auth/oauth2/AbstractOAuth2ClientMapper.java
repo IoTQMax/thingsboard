@@ -47,7 +47,7 @@ import org.thingsboard.server.dao.tenant.TbTenantProfileCache;
 import org.thingsboard.server.dao.tenant.TenantService;
 import org.thingsboard.server.dao.user.UserService;
 import org.thingsboard.server.service.install.InstallScripts;
-import org.thingsboard.server.cluster.TbClusterService;
+import org.thingsboard.server.service.queue.TbClusterService;
 import org.thingsboard.server.service.security.model.SecurityUser;
 import org.thingsboard.server.service.security.model.UserPrincipal;
 
@@ -177,10 +177,12 @@ public abstract class AbstractOAuth2ClientMapper {
             tenant.setTitle(tenantName);
             tenant = tenantService.saveTenant(tenant);
             installScripts.createDefaultRuleChains(tenant.getId());
-            installScripts.createDefaultEdgeRuleChains(tenant.getId());
+            if (edgesEnabled) {
+                installScripts.createDefaultEdgeRuleChains(tenant.getId());
+            }
             tenantProfileCache.evict(tenant.getId());
             tbClusterService.onTenantChange(tenant, null);
-            tbClusterService.broadcastEntityStateChangeEvent(tenant.getId(), tenant.getId(),
+            tbClusterService.onEntityStateChange(tenant.getId(), tenant.getId(),
                     ComponentLifecycleEvent.CREATED);
         } else {
             tenant = tenants.get(0);
@@ -204,7 +206,11 @@ public abstract class AbstractOAuth2ClientMapper {
     }
 
     private Optional<DashboardId> getDashboardId(TenantId tenantId, String dashboardName) {
-        return Optional.ofNullable(dashboardService.findFirstDashboardInfoByTenantIdAndName(tenantId, dashboardName)).map(IdBased::getId);
+        PageLink searchTextLink = new PageLink(1, 0, dashboardName);
+        PageData<DashboardInfo> dashboardsPage = dashboardService.findDashboardsByTenantId(tenantId, searchTextLink);
+        return dashboardsPage.getData().stream()
+                .findAny()
+                .map(IdBased::getId);
     }
 
     private Optional<DashboardId> getDashboardId(TenantId tenantId, CustomerId customerId, String dashboardName) {

@@ -19,11 +19,9 @@ import lombok.Builder;
 import lombok.Data;
 import org.thingsboard.server.common.data.DeviceProfile;
 
-import java.io.Serializable;
-
 @Data
 @Builder
-public class ValidateDeviceCredentialsResponse implements DeviceProfileAware, Serializable {
+public class ValidateDeviceCredentialsResponse implements DeviceProfileAware {
 
     private final TransportDeviceInfo deviceInfo;
     private final DeviceProfile deviceProfile;

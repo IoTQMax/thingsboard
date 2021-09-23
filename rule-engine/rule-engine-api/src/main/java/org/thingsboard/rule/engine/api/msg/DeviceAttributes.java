@@ -71,7 +71,7 @@ public class DeviceAttributes {
     public void remove(AttributeKey key) {
         Map<String, AttributeKvEntry> map = getMapByScope(key.getScope());
         if (map != null) {
-            map.remove(key.getAttributeKey());
+            map.remove(key);
         }
     }
 

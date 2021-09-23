@@ -28,14 +28,11 @@ export interface DashboardInfo extends BaseData<DashboardId> {
   title?: string;
   image?: string;
   assignedCustomers?: Array<ShortCustomerInfo>;
-  mobileHide?: boolean;
-  mobileOrder?: number;
 }
 
 export interface WidgetLayout {
   sizeX?: number;
   sizeY?: number;
-  mobileHide?: boolean;
   mobileHeight?: number;
   mobileOrder?: number;
   col?: number;

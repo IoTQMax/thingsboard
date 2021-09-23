@@ -13,9 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+/**
+ * THERA REQUIERE MODIFICACION FILE
+**/
+
 syntax = "proto3";
 
-option java_package = "org.thingsboard.server.gen.edge.v1";
+option java_package = "org.thingsboard.server.gen.edge";
 option java_multiple_files = true;
 option java_outer_classname = "EdgeProtos";
 
@@ -23,7 +28,7 @@ import "queue.proto";
 
 package edge;
 
-// Interface exported by the ThingsBoard Edge Transport.
+// Interface exported by the Effi.ai Edge Transport.
 service EdgeRpcService {
 
   rpc handleMsgs(stream RequestMsg) returns (stream ResponseMsg) {}
@@ -38,7 +43,6 @@ message RequestMsg {
   ConnectRequestMsg connectRequestMsg = 2;
   UplinkMsg uplinkMsg = 3;
   DownlinkResponseMsg downlinkResponseMsg = 4;
-  SyncRequestMsg syncRequestMsg = 5;
 }
 
 message ResponseMsg {
@@ -73,13 +77,6 @@ message ConnectResponseMsg {
   ConnectResponseCode responseCode = 1;
   string errorMsg = 2;
   EdgeConfiguration configuration = 3;
-}
-
-message SyncRequestMsg {
-  bool syncRequired = 1;
-}
-
-message SyncCompletedMsg {
 }
 
 message EdgeConfiguration {
@@ -129,8 +126,8 @@ message RuleChainUpdateMsg {
   int64 idMSB = 2;
   int64 idLSB = 3;
   string name = 4;
-  optional int64 firstRuleNodeIdMSB = 5;
-  optional int64 firstRuleNodeIdLSB = 6;
+  int64 firstRuleNodeIdMSB = 5;
+  int64 firstRuleNodeIdLSB = 6;
   bool root = 7;
   bool debugMode = 8;
   string configuration = 9;
@@ -174,8 +171,8 @@ message DashboardUpdateMsg {
   UpdateMsgType msgType = 1;
   int64 idMSB = 2;
   int64 idLSB = 3;
-  optional int64 customerIdMSB = 4;
-  optional int64 customerIdLSB = 5;
+  int64 customerIdMSB = 4;
+  int64 customerIdLSB = 5;
   string title = 6;
   string configuration = 7;
 }
@@ -184,15 +181,15 @@ message DeviceUpdateMsg {
   UpdateMsgType msgType = 1;
   int64 idMSB = 2;
   int64 idLSB = 3;
-  optional int64 customerIdMSB = 4;
-  optional int64 customerIdLSB = 5;
-  optional int64 deviceProfileIdMSB = 6;
-  optional int64 deviceProfileIdLSB = 7;
+  int64 customerIdMSB = 4;
+  int64 customerIdLSB = 5;
+  int64 deviceProfileIdMSB = 6;
+  int64 deviceProfileIdLSB = 7;
   string name = 8;
   string type = 9;
-  optional string label = 10;
-  optional string additionalInfo = 11;
-  optional string conflictName = 12;
+  string label = 10;
+  string additionalInfo = 11;
+  string conflictName = 12;
 }
 
 message DeviceProfileUpdateMsg {
@@ -200,17 +197,16 @@ message DeviceProfileUpdateMsg {
   int64 idMSB = 2;
   int64 idLSB = 3;
   string name = 4;
-  optional string description = 5;
+  string description = 5;
   bool default = 6;
   string type = 7;
-  optional string transportType = 8;
-  optional string provisionType = 9;
+  string transportType = 8;
+  string provisionType = 9;
   int64 defaultRuleChainIdMSB = 10;
   int64 defaultRuleChainIdLSB = 11;
   string defaultQueueName = 12;
   bytes profileDataBytes = 13;
-  optional string provisionDeviceKey = 14;
-  optional bytes image = 15;
+  string provisionDeviceKey = 14;
 }
 
 message DeviceCredentialsUpdateMsg {
@@ -218,51 +214,49 @@ message DeviceCredentialsUpdateMsg {
   int64 deviceIdLSB = 2;
   string credentialsType = 3;
   string credentialsId = 4;
-  optional string credentialsValue = 5;
+  string credentialsValue = 5;
 }
 
 message AssetUpdateMsg {
   UpdateMsgType msgType = 1;
   int64 idMSB = 2;
   int64 idLSB = 3;
-  optional int64 customerIdMSB = 4;
-  optional int64 customerIdLSB = 5;
+  int64 customerIdMSB = 4;
+  int64 customerIdLSB = 5;
   string name = 6;
   string type = 7;
-  optional string label = 8;
-  optional string additionalInfo = 9;
+  string label = 8;
+  string additionalInfo = 9;
 }
 
 message EntityViewUpdateMsg {
   UpdateMsgType msgType = 1;
   int64 idMSB = 2;
   int64 idLSB = 3;
-  optional int64 customerIdMSB = 4;
-  optional int64 customerIdLSB = 5;
+  int64 customerIdMSB = 4;
+  int64 customerIdLSB = 5;
   string name = 6;
   string type = 7;
   int64 entityIdMSB = 8;
   int64 entityIdLSB = 9;
   EdgeEntityType entityType = 10;
-  optional string additionalInfo = 11;
+  string additionalInfo = 11;
 }
 
 message AlarmUpdateMsg {
   UpdateMsgType msgType = 1;
-  int64 idMSB = 2;
-  int64 idLSB = 3;
-  string name = 4;
-  string type = 5;
-  string originatorType = 6;
-  string originatorName = 7;
-  string severity = 8;
-  string status = 9;
-  int64 startTs = 10;
-  int64 endTs = 11;
-  int64 ackTs = 12;
-  int64 clearTs = 13;
-  string details = 14;
-  bool propagate = 15;
+  string name = 2;
+  string type = 3;
+  string originatorType = 4;
+  string originatorName = 5;
+  string severity = 6;
+  string status = 7;
+  int64 startTs = 8;
+  int64 endTs = 9;
+  int64 ackTs = 10;
+  int64 clearTs = 11;
+  string details = 12;
+  bool propagate = 13;
 }
 
 message CustomerUpdateMsg {
@@ -270,15 +264,15 @@ message CustomerUpdateMsg {
   int64 idMSB = 2;
   int64 idLSB = 3;
   string title = 4;
-  optional string country = 5;
-  optional string state = 6;
-  optional string city = 7;
-  optional string address = 8;
-  optional string address2 = 9;
-  optional string zip = 10;
-  optional string phone = 11;
-  optional string email = 12;
-  optional string additionalInfo = 13;
+  string country = 5;
+  string state = 6;
+  string city = 7;
+  string address = 8;
+  string address2 = 9;
+  string zip = 10;
+  string phone = 11;
+  string email = 12;
+  string additionalInfo = 13;
 }
 
 message RelationUpdateMsg {
@@ -290,7 +284,7 @@ message RelationUpdateMsg {
   int64 toIdLSB = 6;
   string toEntityType = 7;
   string type = 8;
-  optional string typeGroup = 9;
+  string typeGroup = 9;
   string additionalInfo = 10;
 }
 
@@ -298,13 +292,13 @@ message UserUpdateMsg {
   UpdateMsgType msgType = 1;
   int64 idMSB = 2;
   int64 idLSB = 3;
-  optional int64 customerIdMSB = 4;
-  optional int64 customerIdLSB = 5;
+  int64 customerIdMSB = 4;
+  int64 customerIdLSB = 5;
   string email = 6;
   string authority = 7;
-  optional string firstName = 8;
-  optional string lastName = 9;
-  optional string additionalInfo = 10;
+  string firstName = 8;
+  string lastName = 9;
+  string additionalInfo = 10;
 }
 
 message WidgetsBundleUpdateMsg {
@@ -313,19 +307,18 @@ message WidgetsBundleUpdateMsg {
   int64 idLSB = 3;
   string title = 4;
   string alias = 5;
-  optional bytes image = 6;
+  bytes image = 6;
   bool isSystem = 7;
-  optional string description = 8;
 }
 
 message WidgetTypeUpdateMsg {
   UpdateMsgType msgType = 1;
   int64 idMSB = 2;
   int64 idLSB = 3;
-  optional string bundleAlias = 4;
-  optional string alias = 5;
-  optional string name = 6;
-  optional string descriptorJson = 7;
+  string bundleAlias = 4;
+  string alias = 5;
+  string name = 6;
+  string descriptorJson = 7;
   bool isSystem = 8;
 }
 
@@ -368,22 +361,6 @@ message UserCredentialsRequestMsg {
 message DeviceCredentialsRequestMsg {
   int64 deviceIdMSB = 1;
   int64 deviceIdLSB = 2;
-}
-
-message DeviceProfileDevicesRequestMsg {
-  int64 deviceProfileIdMSB = 1;
-  int64 deviceProfileIdLSB = 2;
-}
-
-message WidgetBundleTypesRequestMsg {
-  int64 widgetBundleIdMSB = 1;
-  int64 widgetBundleIdLSB = 2;
-}
-
-message EntityViewsRequestMsg {
-  int64 entityIdMSB = 1;
-  int64 entityIdLSB = 2;
-  string entityType = 3;
 }
 
 message DeviceRpcCallMsg {
@@ -430,44 +407,38 @@ message UplinkMsg {
   repeated UserCredentialsRequestMsg userCredentialsRequestMsg = 10;
   repeated DeviceCredentialsRequestMsg deviceCredentialsRequestMsg = 11;
   repeated DeviceRpcCallMsg deviceRpcCallMsg = 12;
-  repeated DeviceProfileDevicesRequestMsg deviceProfileDevicesRequestMsg = 13;
-  repeated WidgetBundleTypesRequestMsg widgetBundleTypesRequestMsg = 14;
-  repeated EntityViewsRequestMsg entityViewsRequestMsg = 15;
 }
 
 message UplinkResponseMsg {
   bool success = 1;
   string errorMsg = 2;
-  int32 uplinkMsgId = 3;
 }
 
 message DownlinkResponseMsg {
   bool success = 1;
   string errorMsg = 2;
-  int32 downlinkMsgId = 3;
 }
 
 message DownlinkMsg {
   int32 downlinkMsgId = 1;
-  SyncCompletedMsg syncCompletedMsg = 2;
-  repeated EntityDataProto entityData = 3;
-  repeated DeviceCredentialsRequestMsg deviceCredentialsRequestMsg = 4;
-  repeated DeviceUpdateMsg deviceUpdateMsg = 5;
-  repeated DeviceProfileUpdateMsg deviceProfileUpdateMsg = 6;
-  repeated DeviceCredentialsUpdateMsg deviceCredentialsUpdateMsg = 7;
-  repeated RuleChainUpdateMsg ruleChainUpdateMsg = 8;
-  repeated RuleChainMetadataUpdateMsg ruleChainMetadataUpdateMsg = 9;
-  repeated DashboardUpdateMsg dashboardUpdateMsg = 10;
-  repeated AssetUpdateMsg assetUpdateMsg = 11;
-  repeated EntityViewUpdateMsg entityViewUpdateMsg = 12;
-  repeated AlarmUpdateMsg alarmUpdateMsg = 13;
-  repeated UserUpdateMsg userUpdateMsg = 14;
-  repeated UserCredentialsUpdateMsg userCredentialsUpdateMsg = 15;
-  repeated CustomerUpdateMsg customerUpdateMsg = 16;
-  repeated RelationUpdateMsg relationUpdateMsg = 17;
-  repeated WidgetsBundleUpdateMsg widgetsBundleUpdateMsg = 18;
-  repeated WidgetTypeUpdateMsg widgetTypeUpdateMsg = 19;
-  repeated AdminSettingsUpdateMsg adminSettingsUpdateMsg = 20;
-  repeated DeviceRpcCallMsg deviceRpcCallMsg = 21;
+  repeated EntityDataProto entityData = 2;
+  repeated DeviceCredentialsRequestMsg deviceCredentialsRequestMsg = 3;
+  repeated DeviceUpdateMsg deviceUpdateMsg = 4;
+  repeated DeviceProfileUpdateMsg deviceProfileUpdateMsg = 5;
+  repeated DeviceCredentialsUpdateMsg deviceCredentialsUpdateMsg = 6;
+  repeated RuleChainUpdateMsg ruleChainUpdateMsg = 7;
+  repeated RuleChainMetadataUpdateMsg ruleChainMetadataUpdateMsg = 8;
+  repeated DashboardUpdateMsg dashboardUpdateMsg = 9;
+  repeated AssetUpdateMsg assetUpdateMsg = 10;
+  repeated EntityViewUpdateMsg entityViewUpdateMsg = 11;
+  repeated AlarmUpdateMsg alarmUpdateMsg = 12;
+  repeated UserUpdateMsg userUpdateMsg = 13;
+  repeated UserCredentialsUpdateMsg userCredentialsUpdateMsg = 14;
+  repeated CustomerUpdateMsg customerUpdateMsg = 15;
+  repeated RelationUpdateMsg relationUpdateMsg = 16;
+  repeated WidgetsBundleUpdateMsg widgetsBundleUpdateMsg = 17;
+  repeated WidgetTypeUpdateMsg widgetTypeUpdateMsg = 18;
+  repeated AdminSettingsUpdateMsg adminSettingsUpdateMsg = 19;
+  repeated DeviceRpcCallMsg deviceRpcCallMsg = 20;
 }
 

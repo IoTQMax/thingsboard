@@ -172,13 +172,11 @@ public abstract class AbstractCoapProvisionProtoDeviceTest extends AbstractCoapI
 
     private CoapResponse createCoapClientAndPublish() throws Exception {
         byte[] provisionRequestMsg = createTestProvisionMessage();
-        CoapResponse coapResponse = createCoapClientAndPublish(provisionRequestMsg);
-        Assert.assertNotNull("COAP response", coapResponse);
-        return coapResponse;
+        return createCoapClientAndPublish(provisionRequestMsg);
     }
 
     private CoapResponse createCoapClientAndPublish(byte[] provisionRequestMsg) throws Exception {
-        client = getCoapClient(FeatureType.PROVISION);
+        CoapClient client = getCoapClient(FeatureType.PROVISION);
         return postProvision(client, provisionRequestMsg);
     }
 

@@ -145,7 +145,6 @@ export interface TbFlotComparisonSettings {
   comparisonEnabled: boolean;
   timeForComparison: ComparisonDuration;
   xaxisSecond: TbFlotSecondXAxisSettings;
-  comparisonCustomIntervalValue?: number;
 }
 
 export interface TbFlotThresholdsSettings {
@@ -183,7 +182,6 @@ export interface TbFlotPieSettings {
     color: string;
     width: number;
   };
-  showTooltip: boolean,
   showLabels: boolean;
   fontColor: string;
   fontSize: number;
@@ -311,12 +309,6 @@ export function flotSettingsSchema(chartType: ChartType): JsonSettingsSchema {
     title: 'Hide zero/false values from tooltip',
     type: 'boolean',
     default: false
-  };
-
-  properties.showTooltip = {
-    title: 'Show tooltip',
-    type: 'boolean',
-    default: true
   };
 
   properties.grid = {
@@ -468,7 +460,6 @@ export function flotSettingsSchema(chartType: ChartType): JsonSettingsSchema {
     type: 'javascript'
   });
   schema.form.push('hideZeros');
-  schema.form.push('showTooltip');
   schema.form.push({
     key: 'grid',
     items: [
@@ -555,11 +546,6 @@ const chartSettingsSchemaForComparison: JsonSettingsSchema = {
         type: 'string',
         default: 'previousInterval'
       },
-      comparisonCustomIntervalValue: {
-        title: 'Custom interval value (ms)',
-        type: 'number',
-        default: 7200000
-      },
       xaxisSecond: {
         title: 'Second X axis',
         type: 'object',
@@ -610,16 +596,8 @@ const chartSettingsSchemaForComparison: JsonSettingsSchema = {
         {
           value: 'years',
           label: 'Year ago'
-        },
-        {
-          value: 'customInterval',
-          label: 'Custom interval'
         }
       ]
-    },
-    {
-      key: 'comparisonCustomIntervalValue',
-      condition: 'model.timeForComparison === "customInterval"'
     },
     {
       key: 'xaxisSecond',
@@ -748,11 +726,6 @@ export const flotPieSettingsSchema: JsonSettingsSchema = {
             }
           }
         },
-        showTooltip: {
-          title: 'Show Tooltip',
-          type: 'boolean',
-          default: true,
-        },
         showLabels: {
           title: 'Show labels',
           type: 'boolean',
@@ -786,7 +759,6 @@ export const flotPieSettingsSchema: JsonSettingsSchema = {
           'stroke.width'
         ]
       },
-      'showTooltip',
       'showLabels',
       {
         key: 'fontColor',

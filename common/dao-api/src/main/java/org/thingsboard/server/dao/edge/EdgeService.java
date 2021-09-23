@@ -21,8 +21,10 @@ import org.thingsboard.server.common.data.edge.Edge;
 import org.thingsboard.server.common.data.edge.EdgeInfo;
 import org.thingsboard.server.common.data.edge.EdgeSearchQuery;
 import org.thingsboard.server.common.data.id.CustomerId;
+import org.thingsboard.server.common.data.id.DashboardId;
 import org.thingsboard.server.common.data.id.EdgeId;
 import org.thingsboard.server.common.data.id.EntityId;
+import org.thingsboard.server.common.data.id.RuleChainId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.PageData;
 import org.thingsboard.server.common.data.page.PageLink;
@@ -42,7 +44,7 @@ public interface EdgeService {
 
     Optional<Edge> findEdgeByRoutingKey(TenantId tenantId, String routingKey);
 
-    Edge saveEdge(Edge edge, boolean doValidate);
+    Edge saveEdge(Edge edge);
 
     Edge assignEdgeToCustomer(TenantId tenantId, EdgeId edgeId, CustomerId customerId);
 
@@ -80,9 +82,15 @@ public interface EdgeService {
 
     void assignDefaultRuleChainsToEdge(TenantId tenantId, EdgeId edgeId);
 
-    PageData<Edge> findEdgesByTenantIdAndEntityId(TenantId tenantId, EntityId ruleChainId, PageLink pageLink);
+    ListenableFuture<List<Edge>> findEdgesByTenantIdAndRuleChainId(TenantId tenantId, RuleChainId ruleChainId);
 
-    PageData<EdgeId> findRelatedEdgeIdsByEntityId(TenantId tenantId, EntityId entityId, PageLink pageLink);
+    ListenableFuture<List<Edge>> findEdgesByTenantIdAndDashboardId(TenantId tenantId, DashboardId dashboardId);
+
+    ListenableFuture<List<EdgeId>> findRelatedEdgeIdsByEntityId(TenantId tenantId, EntityId entityId);
+
+    Object checkInstance(Object request);
+
+    Object activateInstance(String licenseSecret, String releaseDate);
 
     String findMissingToRelatedRuleChains(TenantId tenantId, EdgeId edgeId);
 }

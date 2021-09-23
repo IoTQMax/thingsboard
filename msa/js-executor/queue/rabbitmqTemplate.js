@@ -66,7 +66,7 @@ function RabbitMqProducer() {
 
 (async () => {
     try {
-        logger.info('Starting ThingsBoard JavaScript Executor Microservice...');
+        logger.info('Starting Effi.ai JavaScript Executor Microservice...');
         const url = `amqp://${username}:${password}@${host}:${port}${vhost}`;
 
         connection = await new Promise((resolve, reject) => {
@@ -118,7 +118,7 @@ function RabbitMqProducer() {
             }
         }
     } catch (e) {
-        logger.error('Failed to start ThingsBoard JavaScript Executor Microservice: %s', e.message);
+        logger.error('Failed to start Effi.ai JavaScript Executor Microservice: %s', e.message);
         logger.error(e.stack);
         exit(-1);
     }

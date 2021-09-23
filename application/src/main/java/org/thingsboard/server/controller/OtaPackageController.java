@@ -32,13 +32,12 @@ import org.springframework.web.multipart.MultipartFile;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.OtaPackage;
 import org.thingsboard.server.common.data.OtaPackageInfo;
-import org.thingsboard.server.common.data.SaveOtaPackageInfoRequest;
 import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
-import org.thingsboard.server.common.data.id.DeviceProfileId;
-import org.thingsboard.server.common.data.id.OtaPackageId;
 import org.thingsboard.server.common.data.ota.ChecksumAlgorithm;
 import org.thingsboard.server.common.data.ota.OtaPackageType;
+import org.thingsboard.server.common.data.id.DeviceProfileId;
+import org.thingsboard.server.common.data.id.OtaPackageId;
 import org.thingsboard.server.common.data.page.PageData;
 import org.thingsboard.server.common.data.page.PageLink;
 import org.thingsboard.server.queue.util.TbCoreComponent;
@@ -56,7 +55,7 @@ public class OtaPackageController extends BaseController {
     public static final String OTA_PACKAGE_ID = "otaPackageId";
     public static final String CHECKSUM_ALGORITHM = "checksumAlgorithm";
 
-    @PreAuthorize("hasAnyAuthority( 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/otaPackage/{otaPackageId}/download", method = RequestMethod.GET)
     @ResponseBody
     public ResponseEntity<org.springframework.core.io.Resource> downloadOtaPackage(@PathVariable(OTA_PACKAGE_ID) String strOtaPackageId) throws ThingsboardException {
@@ -81,7 +80,7 @@ public class OtaPackageController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/otaPackage/info/{otaPackageId}", method = RequestMethod.GET)
     @ResponseBody
     public OtaPackageInfo getOtaPackageInfoById(@PathVariable(OTA_PACKAGE_ID) String strOtaPackageId) throws ThingsboardException {
@@ -94,7 +93,7 @@ public class OtaPackageController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/otaPackage/{otaPackageId}", method = RequestMethod.GET)
     @ResponseBody
     public OtaPackage getOtaPackageById(@PathVariable(OTA_PACKAGE_ID) String strOtaPackageId) throws ThingsboardException {
@@ -107,15 +106,15 @@ public class OtaPackageController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/otaPackage", method = RequestMethod.POST)
     @ResponseBody
-    public OtaPackageInfo saveOtaPackageInfo(@RequestBody SaveOtaPackageInfoRequest otaPackageInfo) throws ThingsboardException {
+    public OtaPackageInfo saveOtaPackageInfo(@RequestBody OtaPackageInfo otaPackageInfo) throws ThingsboardException {
         boolean created = otaPackageInfo.getId() == null;
         try {
             otaPackageInfo.setTenantId(getTenantId());
             checkEntity(otaPackageInfo.getId(), otaPackageInfo, Resource.OTA_PACKAGE);
-            OtaPackageInfo savedOtaPackageInfo = otaPackageService.saveOtaPackageInfo(new OtaPackageInfo(otaPackageInfo), otaPackageInfo.isUsesUrl());
+            OtaPackageInfo savedOtaPackageInfo = otaPackageService.saveOtaPackageInfo(otaPackageInfo);
             logEntityAction(savedOtaPackageInfo.getId(), savedOtaPackageInfo,
                     null, created ? ActionType.ADDED : ActionType.UPDATED, null);
             return savedOtaPackageInfo;
@@ -126,7 +125,7 @@ public class OtaPackageController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/otaPackage/{otaPackageId}", method = RequestMethod.POST)
     @ResponseBody
     public OtaPackageInfo saveOtaPackageData(@PathVariable(OTA_PACKAGE_ID) String strOtaPackageId,
@@ -146,7 +145,6 @@ public class OtaPackageController extends BaseController {
             otaPackage.setType(info.getType());
             otaPackage.setTitle(info.getTitle());
             otaPackage.setVersion(info.getVersion());
-            otaPackage.setTag(info.getTag());
             otaPackage.setAdditionalInfo(info.getAdditionalInfo());
 
             ChecksumAlgorithm checksumAlgorithm = ChecksumAlgorithm.valueOf(checksumAlgorithmStr.toUpperCase());
@@ -171,7 +169,7 @@ public class OtaPackageController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/otaPackages", method = RequestMethod.GET)
     @ResponseBody
     public PageData<OtaPackageInfo> getOtaPackages(@RequestParam int pageSize,
@@ -187,7 +185,7 @@ public class OtaPackageController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/otaPackages/{deviceProfileId}/{type}", method = RequestMethod.GET)
     @ResponseBody
     public PageData<OtaPackageInfo> getOtaPackages(@PathVariable("deviceProfileId") String strDeviceProfileId,
@@ -208,7 +206,7 @@ public class OtaPackageController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/otaPackage/{otaPackageId}", method = RequestMethod.DELETE)
     @ResponseBody
     public void deleteOtaPackage(@PathVariable("otaPackageId") String strOtaPackageId) throws ThingsboardException {

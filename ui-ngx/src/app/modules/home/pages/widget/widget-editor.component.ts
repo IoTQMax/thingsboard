@@ -177,7 +177,7 @@ export class WidgetEditorComponent extends PageComponent implements OnInit, OnDe
 
   private init(data: any) {
     this.widgetsBundle = data.widgetsBundle;
-    if (this.authUser.authority === Authority.TENANT_ADMIN) {
+    if (this.authUser.authority === Authority.TENANT_ADMIN || this.authUser.authority === Authority.TENANT_INSTALL || this.authUser.authority === Authority.TENANT_INTEGRA) {
       this.isReadOnly = !this.widgetsBundle || this.widgetsBundle.tenantId.id === NULL_UUID;
     } else {
       this.isReadOnly = this.authUser.authority !== Authority.SYS_ADMIN;

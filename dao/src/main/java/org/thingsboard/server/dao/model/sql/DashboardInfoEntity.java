@@ -63,12 +63,6 @@ public class DashboardInfoEntity extends BaseSqlEntity<DashboardInfo> implements
     @Column(name = ModelConstants.DASHBOARD_ASSIGNED_CUSTOMERS_PROPERTY)
     private String assignedCustomers;
 
-    @Column(name = ModelConstants.DASHBOARD_MOBILE_HIDE_PROPERTY)
-    private boolean mobileHide;
-
-    @Column(name = ModelConstants.DASHBOARD_MOBILE_ORDER_PROPERTY)
-    private Integer mobileOrder;
-
     public DashboardInfoEntity() {
         super();
     }
@@ -90,8 +84,6 @@ public class DashboardInfoEntity extends BaseSqlEntity<DashboardInfo> implements
                 log.error("Unable to serialize assigned customers to string!", e);
             }
         }
-        this.mobileHide = dashboardInfo.isMobileHide();
-        this.mobileOrder = dashboardInfo.getMobileOrder();
     }
 
     @Override
@@ -124,8 +116,6 @@ public class DashboardInfoEntity extends BaseSqlEntity<DashboardInfo> implements
                 log.warn("Unable to parse assigned customers!", e);
             }
         }
-        dashboardInfo.setMobileHide(mobileHide);
-        dashboardInfo.setMobileOrder(mobileOrder);
         return dashboardInfo;
     }
 

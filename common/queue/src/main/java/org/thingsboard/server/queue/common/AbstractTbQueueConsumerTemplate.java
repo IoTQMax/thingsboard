@@ -172,11 +172,6 @@ public abstract class AbstractTbQueueConsumerTemplate<R, T extends TbQueueMsg> i
         }
     }
 
-    @Override
-    public boolean isStopped() {
-        return stopped;
-    }
-
     abstract protected List<R> doPoll(long durationInMillis);
 
     abstract protected T decode(R record) throws IOException;

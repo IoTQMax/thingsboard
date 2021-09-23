@@ -34,6 +34,11 @@ import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.edge.EdgeEventActionType;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.CustomerId;
+
+import org.thingsboard.server.common.data.id.UserId; //THERA
+import org.thingsboard.server.common.data.security.Authority; //THERA
+//import org.thingsboard.server.common.data.id.InstallerId;  //THERA
+
 import org.thingsboard.server.common.data.id.EdgeId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.PageData;
@@ -53,7 +58,7 @@ public class CustomerController extends BaseController {
     public static final String CUSTOMER_ID = "customerId";
     public static final String IS_PUBLIC = "isPublic";
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/customer/{customerId}", method = RequestMethod.GET)
     @ResponseBody
     public Customer getCustomerById(@PathVariable(CUSTOMER_ID) String strCustomerId) throws ThingsboardException {
@@ -70,7 +75,7 @@ public class CustomerController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/customer/{customerId}/shortInfo", method = RequestMethod.GET)
     @ResponseBody
     public JsonNode getShortCustomerInfoById(@PathVariable(CUSTOMER_ID) String strCustomerId) throws ThingsboardException {
@@ -88,7 +93,7 @@ public class CustomerController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/customer/{customerId}/title", method = RequestMethod.GET, produces = "application/text")
     @ResponseBody
     public String getCustomerTitleById(@PathVariable(CUSTOMER_ID) String strCustomerId) throws ThingsboardException {
@@ -102,13 +107,17 @@ public class CustomerController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/customer", method = RequestMethod.POST)
     @ResponseBody
     public Customer saveCustomer(@RequestBody Customer customer) throws ThingsboardException {
         try {
+            
             customer.setTenantId(getCurrentUser().getTenantId());
 
+            //customer.setIntegratorId(getCurrentUser().getId()); //THERA 11
+            //customer.setInstallerId(getCurrentUser().getId());  //THERA 11
+            
             checkEntity(customer.getId(), customer, Resource.CUSTOMER);
 
             Customer savedCustomer = checkNotNull(customerService.saveCustomer(customer));
@@ -131,7 +140,7 @@ public class CustomerController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/customer/{customerId}", method = RequestMethod.DELETE)
     @ResponseStatus(value = HttpStatus.OK)
     public void deleteCustomer(@PathVariable(CUSTOMER_ID) String strCustomerId) throws ThingsboardException {
@@ -149,7 +158,7 @@ public class CustomerController extends BaseController {
                     ActionType.DELETED, null, strCustomerId);
 
             sendDeleteNotificationMsg(getTenantId(), customerId, relatedEdgeIds);
-            tbClusterService.broadcastEntityStateChangeEvent(getTenantId(), customerId, ComponentLifecycleEvent.DELETED);
+            tbClusterService.onEntityStateChange(getTenantId(), customerId, ComponentLifecycleEvent.DELETED);
         } catch (Exception e) {
 
             logEntityAction(emptyId(EntityType.CUSTOMER),
@@ -161,7 +170,7 @@ public class CustomerController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/customers", params = {"pageSize", "page"}, method = RequestMethod.GET)
     @ResponseBody
     public PageData<Customer> getCustomers(@RequestParam int pageSize,
@@ -172,13 +181,24 @@ public class CustomerController extends BaseController {
         try {
             PageLink pageLink = createPageLink(pageSize, page, textSearch, sortProperty, sortOrder);
             TenantId tenantId = getCurrentUser().getTenantId();
-            return checkNotNull(customerService.findCustomersByTenantId(tenantId, pageLink));
+//THERA BEGIN
+            //return checkNotNull(customerService.findCustomersByTenantId(tenantId, pageLink));
+            if (Authority.TENANT_INSTALL.equals(getCurrentUser().getAuthority()) ||
+                Authority.TENANT_INTEGRA.equals(getCurrentUser().getAuthority())) 
+            {
+                return checkNotNull(customerService.findCustomersByTenantIdUser(getCurrentUser().getAuthority(), getCurrentUser().getId(), tenantId, pageLink));
+            } else
+            {
+                return checkNotNull(customerService.findCustomersByTenantId(tenantId, pageLink));
+            }
+//THERA END
+
         } catch (Exception e) {
             throw handleException(e);
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/tenant/customers", params = {"customerTitle"}, method = RequestMethod.GET)
     @ResponseBody
     public Customer getTenantCustomer(

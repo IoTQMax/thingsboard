@@ -101,7 +101,6 @@ export default abstract class LeafletMap {
             maxZoom }: MapSettings = options;
         if (useClusterMarkers) {
             const clusteringSettings: MarkerClusterGroupOptions = {
-                spiderfyOnMaxZoom: false,
                 zoomToBoundsOnClick: zoomOnClick,
                 showCoverageOnHover,
                 removeOutsideVisibleBounds,

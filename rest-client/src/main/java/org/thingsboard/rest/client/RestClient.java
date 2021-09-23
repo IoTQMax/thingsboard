@@ -104,7 +104,6 @@ import org.thingsboard.server.common.data.kv.TsKvEntry;
 import org.thingsboard.server.common.data.oauth2.OAuth2ClientInfo;
 import org.thingsboard.server.common.data.oauth2.OAuth2ClientRegistrationTemplate;
 import org.thingsboard.server.common.data.oauth2.OAuth2Info;
-import org.thingsboard.server.common.data.oauth2.PlatformType;
 import org.thingsboard.server.common.data.ota.ChecksumAlgorithm;
 import org.thingsboard.server.common.data.ota.OtaPackageType;
 import org.thingsboard.server.common.data.page.PageData;
@@ -337,7 +336,7 @@ public class RestClient implements ClientHttpRequestInterceptor, Closeable {
         addTimePageLinkToParam(params, pageLink);
 
         return restTemplate.exchange(
-                baseURL +  urlSecondPart + "&" + getTimeUrlParams(pageLink),
+                baseURL +  urlSecondPart + getTimeUrlParams(pageLink),
                 HttpMethod.GET,
                 HttpEntity.EMPTY,
                 new ParameterizedTypeReference<PageData<AlarmInfo>>() {
@@ -1773,22 +1772,13 @@ public class RestClient implements ClientHttpRequestInterceptor, Closeable {
                 }).getBody();
     }
 
-    public List<OAuth2ClientInfo> getOAuth2Clients(String pkgName, PlatformType platformType) {
+    public List<OAuth2ClientInfo> getOAuth2Clients(String pkgName) {
         Map<String, String> params = new HashMap<>();
         StringBuilder urlBuilder = new StringBuilder(baseURL);
         urlBuilder.append("/api/noauth/oauth2Clients");
         if (pkgName != null) {
             urlBuilder.append("?pkgName={pkgName}");
             params.put("pkgName", pkgName);
-        }
-        if (platformType != null) {
-            if (pkgName != null) {
-                urlBuilder.append("&");
-            } else {
-                urlBuilder.append("?");
-            }
-            urlBuilder.append("platform={platform}");
-            params.put("platform", platformType.name());
         }
         return restTemplate.exchange(
                 urlBuilder.toString(),
@@ -1811,12 +1801,12 @@ public class RestClient implements ClientHttpRequestInterceptor, Closeable {
     }
 
     public void handleOneWayDeviceRPCRequest(DeviceId deviceId, JsonNode requestBody) {
-        restTemplate.postForLocation(baseURL + "/api/rpc/oneway/{deviceId}", requestBody, deviceId.getId());
+        restTemplate.postForLocation(baseURL + "/api/plugins/rpc/oneway/{deviceId}", requestBody, deviceId.getId());
     }
 
     public JsonNode handleTwoWayDeviceRPCRequest(DeviceId deviceId, JsonNode requestBody) {
         return restTemplate.exchange(
-                baseURL + "/api/rpc/twoway/{deviceId}",
+                baseURL + "/api/plugins/rpc/twoway/{deviceId}",
                 HttpMethod.POST,
                 new HttpEntity<>(requestBody),
                 new ParameterizedTypeReference<JsonNode>() {
@@ -2034,7 +2024,7 @@ public class RestClient implements ClientHttpRequestInterceptor, Closeable {
         params.put("useStrictDataTypes", Boolean.toString(useStrictDataTypes));
 
         StringBuilder urlBuilder = new StringBuilder(baseURL);
-        urlBuilder.append("/api/plugins/telemetry/{entityType}/{entityId}/values/timeseries?keys={keys}&interval={interval}&limit={limit}&agg={agg}&useStrictDataTypes={useStrictDataTypes}&orderBy={orderBy}");
+        urlBuilder.append("/api/plugins/telemetry/{entityType}/{entityId}/values/timeseries?keys={keys}&interval={interval}&agg={agg}&useStrictDataTypes={useStrictDataTypes}&orderBy={orderBy}");
 
         if (startTime != null) {
             urlBuilder.append("&startTs={startTs}");
@@ -2378,7 +2368,7 @@ public class RestClient implements ClientHttpRequestInterceptor, Closeable {
 
     public void setUserCredentialsEnabled(UserId userId, boolean userCredentialsEnabled) {
         restTemplate.postForLocation(
-                baseURL + "/api/user/{userId}/userCredentialsEnabled?userCredentialsEnabled={userCredentialsEnabled}",
+                baseURL + "/api/user/{userId}/userCredentialsEnabled?serCredentialsEnabled={serCredentialsEnabled}",
                 null,
                 userId.getId(),
                 userCredentialsEnabled);
@@ -2977,10 +2967,8 @@ public class RestClient implements ClientHttpRequestInterceptor, Closeable {
         ).getBody();
     }
 
-    public OtaPackageInfo saveOtaPackageInfo(OtaPackageInfo otaPackageInfo, boolean isUrl) {
-        Map<String, String> params = new HashMap<>();
-        params.put("isUrl", Boolean.toString(isUrl));
-        return restTemplate.postForEntity(baseURL + "/api/otaPackage?isUrl={isUrl}", otaPackageInfo, OtaPackageInfo.class, params).getBody();
+    public OtaPackageInfo saveOtaPackageInfo(OtaPackageInfo otaPackageInfo) {
+        return restTemplate.postForEntity(baseURL + "/api/otaPackage", otaPackageInfo, OtaPackageInfo.class).getBody();
     }
 
     public OtaPackageInfo saveOtaPackageData(OtaPackageId otaPackageId, String checkSum, ChecksumAlgorithm checksumAlgorithm, MultipartFile file) throws Exception {

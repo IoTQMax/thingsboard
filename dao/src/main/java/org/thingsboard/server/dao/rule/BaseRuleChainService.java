@@ -66,6 +66,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import static org.thingsboard.server.common.data.DataConstants.TENANT;
@@ -374,21 +375,18 @@ public class BaseRuleChainService extends AbstractEntityService implements RuleC
                 throw new DataValidationException("Deletion of Root Tenant Rule Chain is prohibited!");
             }
             if (RuleChainType.EDGE.equals(ruleChain.getType())) {
-                PageLink pageLink = new PageLink(DEFAULT_PAGE_SIZE);
-                PageData<Edge> pageData;
-                do {
-                    pageData = edgeService.findEdgesByTenantIdAndEntityId(tenantId, ruleChainId, pageLink);
-                    if (pageData != null && pageData.getData() != null && !pageData.getData().isEmpty()) {
-                        for (Edge edge : pageData.getData()) {
+                try {
+                    List<Edge> edges = edgeService.findEdgesByTenantIdAndRuleChainId(tenantId, ruleChainId).get();
+                    if (edges != null  && !edges.isEmpty()) {
+                        for (Edge edge : edges) {
                             if (edge.getRootRuleChainId() != null && edge.getRootRuleChainId().equals(ruleChainId)) {
                                 throw new DataValidationException("Can't delete rule chain that is root for edge [" + edge.getName() + "]. Please assign another root rule chain first to the edge!");
                             }
                         }
-                        if (pageData.hasNext()) {
-                            pageLink = pageLink.nextPageLink();
-                        }
                     }
-                } while (pageData != null && pageData.hasNext());
+                } catch (InterruptedException | ExecutionException e) {
+                    log.error("Can't get edges by tenant id [{}] and rule chain id [{}]", tenantId.getId(), ruleChainId.getId(), e);
+                }
             }
         }
         checkRuleNodesAndDelete(tenantId, ruleChainId);
@@ -633,14 +631,15 @@ public class BaseRuleChainService extends AbstractEntityService implements RuleC
     }
 
     @Override
-    public PageData<RuleChain> findAutoAssignToEdgeRuleChainsByTenantId(TenantId tenantId, PageLink pageLink) {
-        log.trace("Executing findAutoAssignToEdgeRuleChainsByTenantId, tenantId [{}], pageLink {}", tenantId, pageLink);
+    public ListenableFuture<List<RuleChain>> findAutoAssignToEdgeRuleChainsByTenantId(TenantId tenantId) {
+        log.trace("Executing findAutoAssignToEdgeRuleChainsByTenantId, tenantId [{}]", tenantId);
         validateId(tenantId, INCORRECT_TENANT_ID + tenantId);
-        return ruleChainDao.findAutoAssignToEdgeRuleChainsByTenantId(tenantId.getId(), pageLink);
+        return ruleChainDao.findAutoAssignToEdgeRuleChainsByTenantId(tenantId.getId());
     }
 
+
     private void checkRuleNodesAndDelete(TenantId tenantId, RuleChainId ruleChainId) {
-        try {
+        try{
             ruleChainDao.removeById(tenantId, ruleChainId.getId());
         } catch (Exception t) {
             ConstraintViolationException e = extractConstraintViolationException(t).orElse(null);
@@ -675,7 +674,7 @@ public class BaseRuleChainService extends AbstractEntityService implements RuleC
                 @Override
                 protected void validateCreate(TenantId tenantId, RuleChain data) {
                     DefaultTenantProfileConfiguration profileConfiguration =
-                            (DefaultTenantProfileConfiguration) tenantProfileCache.get(tenantId).getProfileData().getConfiguration();
+                            (DefaultTenantProfileConfiguration)tenantProfileCache.get(tenantId).getProfileData().getConfiguration();
                     long maxRuleChains = profileConfiguration.getMaxRuleChains();
                     validateNumberOfEntitiesPerTenant(tenantId, ruleChainDao, maxRuleChains, EntityType.RULE_CHAIN);
                 }

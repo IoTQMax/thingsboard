@@ -24,7 +24,7 @@ const routes: Routes = [
     path: 'auditLogs',
     component: AuditLogTableComponent,
     data: {
-      auth: [Authority.TENANT_ADMIN],
+      auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
       title: 'audit-log.audit-logs',
       breadcrumb: {
         label: 'audit-log.audit-logs',

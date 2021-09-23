@@ -112,8 +112,8 @@
                                     fxFlex
                                     [selectFirstBundle]="false"
                                     [selectBundleAlias]="selectedWidgetsBundleAlias"
-                                    [ngModel]="null"
-                                    (ngModelChange)="onWidgetsBundleChanged($event)">
+                                    [(ngModel)]="widgetsBundle"
+                                    (ngModelChange)="onWidgetsBundleChanged()">
           </tb-widgets-bundle-select>
         </div>
         <button mat-raised-button [fxShow]="widgetsList.length > 0"
@@ -245,11 +245,11 @@
     </ngx-hm-carousel>
     <span translate *ngIf="mode === 'widget' && widgetsLoaded &&
                            widgetsList.length === 0 &&
-                           widgetBundleSet"
+                           widgetsBundle"
           fxFlex fxLayoutAlign="center center"
           style="display: flex;"
           class="mat-headline">widgets-bundle.empty</span>
-    <span translate *ngIf="mode === 'widget' && !widgetBundleSet"
+    <span translate *ngIf="mode === 'widget' && !widgetsBundle"
           fxFlex fxLayoutAlign="center center"
           style="display: flex;"
           class="mat-headline">widget.select-widgets-bundle</span>

@@ -112,7 +112,9 @@ export class AuditLogTableComponent implements OnInit {
     this.dirtyValue = !this.activeValue;
     if (!this.auditLogMode) {
       const authUser = getCurrentAuthUser(this.store);
-      if (authUser.authority === Authority.TENANT_ADMIN) {
+      if (authUser.authority === Authority.TENANT_ADMIN ||
+          authUser.authority === Authority.TENANT_INSTALL ||
+          authUser.authority === Authority.TENANT_INTEGRA) { //THERA
         this.auditLogMode = AuditLogMode.TENANT;
       }
       updateOnInit = true;

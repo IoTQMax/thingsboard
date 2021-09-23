@@ -50,7 +50,6 @@ import org.thingsboard.server.common.data.id.RuleChainId;
 import org.thingsboard.server.common.data.id.RuleNodeId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.PageData;
-import org.thingsboard.server.common.data.page.PageDataIterableByTenant;
 import org.thingsboard.server.common.data.page.PageLink;
 import org.thingsboard.server.common.data.plugin.ComponentLifecycleEvent;
 import org.thingsboard.server.common.data.rule.DefaultRuleChainCreateRequest;
@@ -71,7 +70,6 @@ import org.thingsboard.server.service.script.RuleNodeJsScriptEngine;
 import org.thingsboard.server.service.security.permission.Operation;
 import org.thingsboard.server.service.security.permission.Resource;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -87,8 +85,6 @@ public class RuleChainController extends BaseController {
 
     public static final String RULE_CHAIN_ID = "ruleChainId";
     public static final String RULE_NODE_ID = "ruleNodeId";
-
-    private static final int DEFAULT_PAGE_SIZE = 1000;
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
     public static final int TIMEOUT = 20;
@@ -108,7 +104,7 @@ public class RuleChainController extends BaseController {
     @Value("${actors.rule.chain.debug_mode_rate_limits_per_tenant.enabled}")
     private boolean debugPerTenantEnabled;
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/ruleChain/{ruleChainId}", method = RequestMethod.GET)
     @ResponseBody
     public RuleChain getRuleChainById(@PathVariable(RULE_CHAIN_ID) String strRuleChainId) throws ThingsboardException {
@@ -121,7 +117,7 @@ public class RuleChainController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/ruleChain/{ruleChainId}/metadata", method = RequestMethod.GET)
     @ResponseBody
     public RuleChainMetaData getRuleChainMetaData(@PathVariable(RULE_CHAIN_ID) String strRuleChainId) throws ThingsboardException {
@@ -136,7 +132,7 @@ public class RuleChainController extends BaseController {
     }
 
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/ruleChain", method = RequestMethod.POST)
     @ResponseBody
     public RuleChain saveRuleChain(@RequestBody RuleChain ruleChain) throws ThingsboardException {
@@ -149,7 +145,7 @@ public class RuleChainController extends BaseController {
             RuleChain savedRuleChain = checkNotNull(ruleChainService.saveRuleChain(ruleChain));
 
             if (RuleChainType.CORE.equals(savedRuleChain.getType())) {
-                tbClusterService.broadcastEntityStateChangeEvent(ruleChain.getTenantId(), savedRuleChain.getId(),
+                tbClusterService.onEntityStateChange(ruleChain.getTenantId(), savedRuleChain.getId(),
                         created ? ComponentLifecycleEvent.CREATED : ComponentLifecycleEvent.UPDATED);
             }
 
@@ -173,7 +169,7 @@ public class RuleChainController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/ruleChain/device/default", method = RequestMethod.POST)
     @ResponseBody
     public RuleChain saveRuleChain(@RequestBody DefaultRuleChainCreateRequest request) throws ThingsboardException {
@@ -183,7 +179,7 @@ public class RuleChainController extends BaseController {
 
             RuleChain savedRuleChain = installScripts.createDefaultRuleChain(getCurrentUser().getTenantId(), request.getName());
 
-            tbClusterService.broadcastEntityStateChangeEvent(savedRuleChain.getTenantId(), savedRuleChain.getId(), ComponentLifecycleEvent.CREATED);
+            tbClusterService.onEntityStateChange(savedRuleChain.getTenantId(), savedRuleChain.getId(), ComponentLifecycleEvent.CREATED);
 
             logEntityAction(savedRuleChain.getId(), savedRuleChain, null, ActionType.ADDED, null);
 
@@ -196,7 +192,7 @@ public class RuleChainController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/ruleChain/{ruleChainId}/root", method = RequestMethod.POST)
     @ResponseBody
     public RuleChain setRootRuleChain(@PathVariable(RULE_CHAIN_ID) String strRuleChainId) throws ThingsboardException {
@@ -210,7 +206,7 @@ public class RuleChainController extends BaseController {
                 if (previousRootRuleChain != null) {
                     previousRootRuleChain = ruleChainService.findRuleChainById(getTenantId(), previousRootRuleChain.getId());
 
-                    tbClusterService.broadcastEntityStateChangeEvent(previousRootRuleChain.getTenantId(), previousRootRuleChain.getId(),
+                    tbClusterService.onEntityStateChange(previousRootRuleChain.getTenantId(), previousRootRuleChain.getId(),
                             ComponentLifecycleEvent.UPDATED);
 
                     logEntityAction(previousRootRuleChain.getId(), previousRootRuleChain,
@@ -218,7 +214,7 @@ public class RuleChainController extends BaseController {
                 }
                 ruleChain = ruleChainService.findRuleChainById(getTenantId(), ruleChainId);
 
-                tbClusterService.broadcastEntityStateChangeEvent(ruleChain.getTenantId(), ruleChain.getId(),
+                tbClusterService.onEntityStateChange(ruleChain.getTenantId(), ruleChain.getId(),
                         ComponentLifecycleEvent.UPDATED);
 
                 logEntityAction(ruleChain.getId(), ruleChain,
@@ -235,7 +231,7 @@ public class RuleChainController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/ruleChain/metadata", method = RequestMethod.POST)
     @ResponseBody
     public RuleChainMetaData saveRuleChainMetaData(@RequestBody RuleChainMetaData ruleChainMetaData) throws ThingsboardException {
@@ -254,7 +250,7 @@ public class RuleChainController extends BaseController {
             RuleChainMetaData savedRuleChainMetaData = checkNotNull(ruleChainService.loadRuleChainMetaData(tenantId, ruleChainMetaData.getRuleChainId()));
 
             if (RuleChainType.CORE.equals(ruleChain.getType())) {
-                tbClusterService.broadcastEntityStateChangeEvent(ruleChain.getTenantId(), ruleChain.getId(), ComponentLifecycleEvent.UPDATED);
+                tbClusterService.onEntityStateChange(ruleChain.getTenantId(), ruleChain.getId(), ComponentLifecycleEvent.UPDATED);
             }
 
             logEntityAction(ruleChain.getId(), ruleChain,
@@ -276,7 +272,7 @@ public class RuleChainController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/ruleChains", params = {"pageSize", "page"}, method = RequestMethod.GET)
     @ResponseBody
     public PageData<RuleChain> getRuleChains(
@@ -299,7 +295,7 @@ public class RuleChainController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/ruleChain/{ruleChainId}", method = RequestMethod.DELETE)
     @ResponseStatus(value = HttpStatus.OK)
     public void deleteRuleChain(@PathVariable(RULE_CHAIN_ID) String strRuleChainId) throws ThingsboardException {
@@ -323,9 +319,9 @@ public class RuleChainController extends BaseController {
 
             if (RuleChainType.CORE.equals(ruleChain.getType())) {
                 referencingRuleChainIds.forEach(referencingRuleChainId ->
-                        tbClusterService.broadcastEntityStateChangeEvent(ruleChain.getTenantId(), referencingRuleChainId, ComponentLifecycleEvent.UPDATED));
+                        tbClusterService.onEntityStateChange(ruleChain.getTenantId(), referencingRuleChainId, ComponentLifecycleEvent.UPDATED));
 
-                tbClusterService.broadcastEntityStateChangeEvent(ruleChain.getTenantId(), ruleChain.getId(), ComponentLifecycleEvent.DELETED);
+                tbClusterService.onEntityStateChange(ruleChain.getTenantId(), ruleChain.getId(), ComponentLifecycleEvent.DELETED);
             }
 
             logEntityAction(ruleChainId, ruleChain,
@@ -345,7 +341,7 @@ public class RuleChainController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/ruleNode/{ruleNodeId}/debugIn", method = RequestMethod.GET)
     @ResponseBody
     public JsonNode getLatestRuleNodeDebugInput(@PathVariable(RULE_NODE_ID) String strRuleNodeId) throws ThingsboardException {
@@ -371,7 +367,7 @@ public class RuleChainController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/ruleChain/testScript", method = RequestMethod.POST)
     @ResponseBody
     public JsonNode testScript(@RequestBody JsonNode inputParams) throws ThingsboardException {
@@ -434,7 +430,7 @@ public class RuleChainController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/ruleChains/export", params = {"limit"}, method = RequestMethod.GET)
     @ResponseBody
     public RuleChainData exportRuleChains(@RequestParam("limit") int limit) throws ThingsboardException {
@@ -447,7 +443,7 @@ public class RuleChainController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/ruleChains/import", method = RequestMethod.POST)
     @ResponseBody
     public void importRuleChains(@RequestBody RuleChainData ruleChainData, @RequestParam(required = false, defaultValue = "false") boolean overwrite) throws ThingsboardException {
@@ -456,7 +452,7 @@ public class RuleChainController extends BaseController {
             List<RuleChainImportResult> importResults = ruleChainService.importTenantRuleChains(tenantId, ruleChainData, RuleChainType.CORE, overwrite);
             if (!CollectionUtils.isEmpty(importResults)) {
                 for (RuleChainImportResult importResult : importResults) {
-                    tbClusterService.broadcastEntityStateChangeEvent(importResult.getTenantId(), importResult.getRuleChainId(), importResult.getLifecycleEvent());
+                    tbClusterService.onEntityStateChange(importResult.getTenantId(), importResult.getRuleChainId(), importResult.getLifecycleEvent());
                 }
             }
         } catch (Exception e) {
@@ -483,7 +479,7 @@ public class RuleChainController extends BaseController {
         return objectMapper.writeValueAsString(resultNode);
     }
 
-    private JsonNode convertMsgToOut(TbMsg msg) throws Exception {
+    private JsonNode convertMsgToOut(TbMsg msg) throws Exception{
         ObjectNode msgData = objectMapper.createObjectNode();
         if (!StringUtils.isEmpty(msg.getData())) {
             msgData.set("msg", objectMapper.readTree(msg.getData()));
@@ -494,7 +490,7 @@ public class RuleChainController extends BaseController {
         return msgData;
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/edge/{edgeId}/ruleChain/{ruleChainId}", method = RequestMethod.POST)
     @ResponseBody
     public RuleChain assignRuleChainToEdge(@PathVariable("edgeId") String strEdgeId,
@@ -506,7 +502,7 @@ public class RuleChainController extends BaseController {
             Edge edge = checkEdgeId(edgeId, Operation.READ);
 
             RuleChainId ruleChainId = new RuleChainId(toUUID(strRuleChainId));
-            checkRuleChain(ruleChainId, Operation.READ);
+            checkRuleChain(ruleChainId, Operation.ASSIGN_TO_EDGE);
 
             RuleChain savedRuleChain = checkNotNull(ruleChainService.assignRuleChainToEdge(getCurrentUser().getTenantId(), ruleChainId, edgeId));
 
@@ -527,7 +523,7 @@ public class RuleChainController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/edge/{edgeId}/ruleChain/{ruleChainId}", method = RequestMethod.DELETE)
     @ResponseBody
     public RuleChain unassignRuleChainFromEdge(@PathVariable("edgeId") String strEdgeId,
@@ -538,7 +534,7 @@ public class RuleChainController extends BaseController {
             EdgeId edgeId = new EdgeId(toUUID(strEdgeId));
             Edge edge = checkEdgeId(edgeId, Operation.READ);
             RuleChainId ruleChainId = new RuleChainId(toUUID(strRuleChainId));
-            RuleChain ruleChain = checkRuleChain(ruleChainId, Operation.READ);
+            RuleChain ruleChain = checkRuleChain(ruleChainId, Operation.UNASSIGN_FROM_EDGE);
 
             RuleChain savedRuleChain = checkNotNull(ruleChainService.unassignRuleChainFromEdge(getCurrentUser().getTenantId(), ruleChainId, edgeId, false));
 
@@ -559,7 +555,7 @@ public class RuleChainController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/edge/{edgeId}/ruleChains", params = {"pageSize", "page"}, method = RequestMethod.GET)
     @ResponseBody
     public PageData<RuleChain> getEdgeRuleChains(
@@ -581,7 +577,7 @@ public class RuleChainController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/ruleChain/{ruleChainId}/edgeTemplateRoot", method = RequestMethod.POST)
     @ResponseBody
     public RuleChain setEdgeTemplateRootRuleChain(@PathVariable(RULE_CHAIN_ID) String strRuleChainId) throws ThingsboardException {
@@ -600,7 +596,7 @@ public class RuleChainController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/ruleChain/{ruleChainId}/autoAssignToEdge", method = RequestMethod.POST)
     @ResponseBody
     public RuleChain setAutoAssignToEdgeRuleChain(@PathVariable(RULE_CHAIN_ID) String strRuleChainId) throws ThingsboardException {
@@ -619,7 +615,7 @@ public class RuleChainController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/ruleChain/{ruleChainId}/autoAssignToEdge", method = RequestMethod.DELETE)
     @ResponseBody
     public RuleChain unsetAutoAssignToEdgeRuleChain(@PathVariable(RULE_CHAIN_ID) String strRuleChainId) throws ThingsboardException {
@@ -638,20 +634,13 @@ public class RuleChainController extends BaseController {
         }
     }
 
-    // TODO: @voba refactor this - add new config to edge rule chain to set it as auto-assign
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN','TENANT_INSTALL','TENANT_INTEGRA')") //THERA
     @RequestMapping(value = "/ruleChain/autoAssignToEdgeRuleChains", method = RequestMethod.GET)
     @ResponseBody
     public List<RuleChain> getAutoAssignToEdgeRuleChains() throws ThingsboardException {
         try {
             TenantId tenantId = getCurrentUser().getTenantId();
-            List<RuleChain> result = new ArrayList<>();
-            PageDataIterableByTenant<RuleChain> autoAssignRuleChainsIterator =
-                    new PageDataIterableByTenant<>(ruleChainService::findAutoAssignToEdgeRuleChainsByTenantId, tenantId, DEFAULT_PAGE_SIZE);
-            for (RuleChain ruleChain : autoAssignRuleChainsIterator) {
-                result.add(ruleChain);
-            }
-            return checkNotNull(result);
+            return checkNotNull(ruleChainService.findAutoAssignToEdgeRuleChainsByTenantId(tenantId)).get();
         } catch (Exception e) {
             throw handleException(e);
         }

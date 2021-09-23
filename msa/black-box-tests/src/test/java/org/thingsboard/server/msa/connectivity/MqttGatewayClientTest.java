@@ -33,7 +33,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.ResponseEntity;
-import org.thingsboard.common.util.ThingsBoardThreadFactory;
 import org.thingsboard.mqtt.MqttClient;
 import org.thingsboard.mqtt.MqttClientConfig;
 import org.thingsboard.mqtt.MqttHandler;
@@ -68,7 +67,7 @@ public class MqttGatewayClientTest extends AbstractContainerTest {
 
     @Before
     public void createGateway() throws Exception {
-        restClient.login("tenant@thingsboard.org", "tenant");
+        restClient.login("tenant@effi.ai", "tenant");
         this.gatewayDevice = createGatewayDevice();
         Optional<DeviceCredentials> gatewayDeviceCredentials = restClient.getDeviceCredentialsByDeviceId(gatewayDevice.getId());
         Assert.assertTrue(gatewayDeviceCredentials.isPresent());
@@ -108,7 +107,7 @@ public class MqttGatewayClientTest extends AbstractContainerTest {
     public void telemetryUploadWithTs() throws Exception {
         long ts = 1451649600512L;
 
-        restClient.login("tenant@thingsboard.org", "tenant");
+        restClient.login("tenant@effi.ai", "tenant");
         WsClient wsClient = subscribeToWebSocket(createdDevice.getId(), "LATEST_TELEMETRY", CmdsType.TS_SUB_CMDS);
         mqttClient.publish("v1/gateway/telemetry", Unpooled.wrappedBuffer(createGatewayPayload(createdDevice.getName(), ts).toString().getBytes())).get();
         WsTelemetryResponse actualLatestTelemetry = wsClient.getLastMessage();
@@ -260,11 +259,11 @@ public class MqttGatewayClientTest extends AbstractContainerTest {
         JsonObject serverRpcPayload = new JsonObject();
         serverRpcPayload.addProperty("method", "getValue");
         serverRpcPayload.addProperty("params", true);
-        ListeningExecutorService service = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor(ThingsBoardThreadFactory.forName(getClass().getSimpleName())));
+        ListeningExecutorService service = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor());
         ListenableFuture<ResponseEntity> future = service.submit(() -> {
             try {
                 return restClient.getRestTemplate()
-                        .postForEntity(HTTPS_URL + "/api/rpc/twoway/{deviceId}",
+                        .postForEntity(HTTPS_URL + "/api/plugins/rpc/twoway/{deviceId}",
                                 mapper.readTree(serverRpcPayload.toString()), String.class,
                                 createdDevice.getId());
             } catch (IOException e) {
@@ -274,7 +273,6 @@ public class MqttGatewayClientTest extends AbstractContainerTest {
 
         // Wait for RPC call from the server and send the response
         MqttEvent requestFromServer = listener.getEvents().poll(10, TimeUnit.SECONDS);
-        service.shutdownNow();
 
         Assert.assertNotNull(requestFromServer);
         Assert.assertNotNull(requestFromServer.getMessage());

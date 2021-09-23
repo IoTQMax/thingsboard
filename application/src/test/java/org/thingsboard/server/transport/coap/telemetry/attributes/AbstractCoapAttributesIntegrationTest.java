@@ -61,15 +61,12 @@ public abstract class AbstractCoapAttributesIntegrationTest extends AbstractCoap
     @Test
     public void testPushAttributes() throws Exception {
         List<String> expectedKeys = Arrays.asList("key1", "key2", "key3", "key4", "key5");
-        processJsonPayloadAttributesTest(expectedKeys, PAYLOAD_VALUES_STR.getBytes());
+        processAttributesTest(expectedKeys, PAYLOAD_VALUES_STR.getBytes());
     }
 
-    protected void processJsonPayloadAttributesTest(List<String> expectedKeys, byte[] payload) throws Exception {
-        processAttributesTest(expectedKeys, payload, false);
-    }
-
-    protected void processAttributesTest(List<String> expectedKeys, byte[] payload, boolean presenceFieldsTest) throws Exception {
-        client = getCoapClient(FeatureType.ATTRIBUTES);
+    protected void processAttributesTest(List<String> expectedKeys, byte[] payload) throws Exception {
+        log.warn("[testPushAttributes] Device: {}, Transport type: {}", savedDevice.getName(), savedDevice.getType());
+        CoapClient client = getCoapClient(FeatureType.ATTRIBUTES);
 
         postAttributes(client, payload);
 
@@ -97,11 +94,7 @@ public abstract class AbstractCoapAttributesIntegrationTest extends AbstractCoap
 
         String getAttributesValuesUrl = getAttributesValuesUrl(deviceId, actualKeySet);
         List<Map<String, Object>> values = doGetAsyncTyped(getAttributesValuesUrl, new TypeReference<>() {});
-        if (presenceFieldsTest) {
-            assertAttributesProtoValues(values, actualKeySet);
-        } else {
-            assertAttributesValues(values, actualKeySet);
-        }
+        assertAttributesValues(values, expectedKeySet);
         String deleteAttributesUrl = "/api/plugins/telemetry/DEVICE/" + deviceId + "/CLIENT_SCOPE?keys=" + String.join(",", actualKeySet);
         doDelete(deleteAttributesUrl);
     }
@@ -114,12 +107,12 @@ public abstract class AbstractCoapAttributesIntegrationTest extends AbstractCoap
         assertEquals(CoAP.ResponseCode.CREATED, coapResponse.getCode());
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    protected void assertAttributesValues(List<Map<String, Object>> deviceValues, Set<String> keySet) {
+    @SuppressWarnings("unchecked")
+    protected void assertAttributesValues(List<Map<String, Object>> deviceValues, Set<String> expectedKeySet) throws JsonProcessingException {
         for (Map<String, Object> map : deviceValues) {
             String key = (String) map.get("key");
             Object value = map.get("value");
-            assertTrue(keySet.contains(key));
+            assertTrue(expectedKeySet.contains(key));
             switch (key) {
                 case "key1":
                     assertEquals("value1", value);
@@ -137,27 +130,6 @@ public abstract class AbstractCoapAttributesIntegrationTest extends AbstractCoap
                     assertNotNull(value);
                     assertEquals(3, ((LinkedHashMap) value).size());
                     assertEquals(42, ((LinkedHashMap) value).get("someNumber"));
-                    assertEquals(Arrays.asList(1, 2, 3), ((LinkedHashMap) value).get("someArray"));
-                    LinkedHashMap<String, String> someNestedObject = (LinkedHashMap) ((LinkedHashMap) value).get("someNestedObject");
-                    assertEquals("value", someNestedObject.get("key"));
-                    break;
-            }
-        }
-    }
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private void assertAttributesProtoValues(List<Map<String, Object>> values, Set<String> keySet) {
-        for (Map<String, Object> map : values) {
-            String key = (String) map.get("key");
-            Object value = map.get("value");
-            assertTrue(keySet.contains(key));
-            switch (key) {
-                case "key1":
-                    assertEquals("", value);
-                    break;
-                case "key5":
-                    assertNotNull(value);
-                    assertEquals(2, ((LinkedHashMap) value).size());
                     assertEquals(Arrays.asList(1, 2, 3), ((LinkedHashMap) value).get("someArray"));
                     LinkedHashMap<String, String> someNestedObject = (LinkedHashMap) ((LinkedHashMap) value).get("someNestedObject");
                     assertEquals("value", someNestedObject.get("key"));

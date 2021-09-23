@@ -47,7 +47,7 @@ public class JacksonUtil {
             throw new IllegalArgumentException("The given object value: "
                     + fromValue + " cannot be converted to " + toValueTypeRef, e);
         }
-    }
+   }
 
     public static <T> T fromString(String string, Class<T> clazz) {
         try {
@@ -64,15 +64,6 @@ public class JacksonUtil {
         } catch (IOException e) {
             throw new IllegalArgumentException("The given string value: "
                     + string + " cannot be transformed to Json object", e);
-        }
-    }
-
-    public static <T> T fromBytes(byte[] bytes, Class<T> clazz) {
-        try {
-            return bytes != null ? OBJECT_MAPPER.readValue(bytes, clazz) : null;
-        } catch (IOException e) {
-            throw new IllegalArgumentException("The given string value: "
-                    + Arrays.toString(bytes) + " cannot be transformed to Json object", e);
         }
     }
 
@@ -105,7 +96,7 @@ public class JacksonUtil {
         }
     }
 
-    public static ObjectNode newObjectNode() {
+    public static ObjectNode newObjectNode(){
         return OBJECT_MAPPER.createObjectNode();
     }
 
@@ -118,9 +109,4 @@ public class JacksonUtil {
     public static <T> JsonNode valueToTree(T value) {
         return OBJECT_MAPPER.valueToTree(value);
     }
-
-    public static <T> T treeToValue(JsonNode tree, Class<T> type) throws JsonProcessingException {
-        return OBJECT_MAPPER.treeToValue(tree, type);
-    }
-
 }

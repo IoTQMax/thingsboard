@@ -18,9 +18,11 @@ package org.thingsboard.server.dao.customer;
 import com.google.common.util.concurrent.ListenableFuture;
 import org.thingsboard.server.common.data.Customer;
 import org.thingsboard.server.common.data.id.CustomerId;
+import org.thingsboard.server.common.data.id.UserId; //THERA
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.PageData;
 import org.thingsboard.server.common.data.page.PageLink;
+import org.thingsboard.server.common.data.security.Authority; //THERA
 
 import java.util.Optional;
 
@@ -39,6 +41,8 @@ public interface CustomerService {
     Customer findOrCreatePublicCustomer(TenantId tenantId);
 
     PageData<Customer> findCustomersByTenantId(TenantId tenantId, PageLink pageLink);
+
+    PageData<Customer> findCustomersByTenantIdUser(Authority authority, UserId userId, TenantId tenantId, PageLink pageLink); //THERA
 
     void deleteCustomersByTenantId(TenantId tenantId);
 

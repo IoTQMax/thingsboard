@@ -21,7 +21,7 @@ import { AppState } from '@core/core.state';
 import { FormGroup } from '@angular/forms';
 import { UserComponent } from '@modules/home/pages/user/user.component';
 import { Authority } from '@shared/models/authority.enum';
-import { ActivationMethod, activationMethodTranslations, User } from '@shared/models/user.model';
+import { AuthUser, ActivationMethod, activationMethodTranslations, User, TenantUserProfile, tenantuserProfileTranslations, CustomerUserProfile, customeruserProfileTranslations } from '@shared/models/user.model';
 import { CustomerId } from '@shared/models/id/customer-id';
 import { UserService } from '@core/http/user.service';
 import { Observable } from 'rxjs';
@@ -32,6 +32,7 @@ import {
 import { TenantId } from '@app/shared/models/id/tenant-id';
 import { DialogComponent } from '@shared/components/dialog.component';
 import { Router } from '@angular/router';
+import { getCurrentAuthUser } from '@core/auth/auth.selectors';
 
 export interface AddUserDialogData {
   tenantId: string;
@@ -48,6 +49,7 @@ export class AddUserDialogComponent extends DialogComponent<AddUserDialogCompone
 
   detailsForm: FormGroup;
   user: User;
+  private readonly authUser: AuthUser;
 
   activationMethods = Object.keys(ActivationMethod);
   activationMethodEnum = ActivationMethod;
@@ -55,6 +57,20 @@ export class AddUserDialogComponent extends DialogComponent<AddUserDialogCompone
   activationMethodTranslations = activationMethodTranslations;
 
   activationMethod = ActivationMethod.DISPLAY_ACTIVATION_LINK;
+
+/* THERA BEGIN */
+
+  tenantUserProfiles = Object.keys(TenantUserProfile);
+  tenantUserProfileEnum = TenantUserProfile;
+  tenantuserProfileTranslations = tenantuserProfileTranslations;
+  tenantUserProfile = TenantUserProfile.TENANT_ADMIN;
+
+  customerUserProfiles = Object.keys(CustomerUserProfile);
+  customerUserProfileEnum = CustomerUserProfile;
+  customeruserProfileTranslations = customeruserProfileTranslations;
+    
+  customerUserProfile = CustomerUserProfile.CUSTOMER_USER;
+/* THERA END */
 
   @ViewChild(UserComponent, {static: true}) userComponent: UserComponent;
 
@@ -65,6 +81,7 @@ export class AddUserDialogComponent extends DialogComponent<AddUserDialogCompone
               private userService: UserService,
               private dialog: MatDialog) {
     super(store, router, dialogRef);
+    this.authUser = getCurrentAuthUser(this.store);
   }
 
   ngOnInit(): void {
@@ -81,7 +98,33 @@ export class AddUserDialogComponent extends DialogComponent<AddUserDialogCompone
   add(): void {
     if (this.detailsForm.valid) {
       this.user = {...this.user, ...this.userComponent.entityForm.value};
-      this.user.authority = this.data.authority;
+      //this.user.authority = this.data.authority;
+      /* THERA BEGIN*/
+      if (this.isSysAdmin())
+      {
+        switch (this.tenantUserProfile) {
+          case 'TENANT_ADMIN':
+            this.user.authority = Authority.TENANT_ADMIN;
+            break;
+          case 'TENANT_INTEGRA':
+            this.user.authority = Authority.TENANT_INTEGRA;
+            break;
+          case 'TENANT_INSTALL':          
+            this.user.authority = Authority.TENANT_INSTALL;
+            break;
+        }
+      } else
+      {
+        switch (this.customerUserProfile) {
+          case 'CUSTOMER_USER':
+            this.user.authority = Authority.CUSTOMER_USER;
+            break;
+            case 'CUSTOMER_READO':
+              this.user.authority = Authority.CUSTOMER_READO;
+              break;   
+          }
+      }
+      /* THERA END*/
       this.user.tenantId = new TenantId(this.data.tenantId);
       this.user.customerId = new CustomerId(this.data.customerId);
       const sendActivationEmail = this.activationMethod === ActivationMethod.SEND_ACTIVATION_MAIL;
@@ -103,6 +146,10 @@ export class AddUserDialogComponent extends DialogComponent<AddUserDialogCompone
         }
       );
     }
+  }
+
+  isSysAdmin(): boolean {
+    return this.authUser.authority === Authority.SYS_ADMIN;
   }
 
   displayActivationLink(activationLink: string): Observable<void> {

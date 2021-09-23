@@ -14,7 +14,7 @@
 /// limitations under the License.
 ///
 
-import { NgModule, SecurityContext } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FooterComponent } from '@shared/components/footer.component';
 import { LogoComponent } from '@shared/components/logo.component';
@@ -78,7 +78,6 @@ import { DatetimePeriodComponent } from '@shared/components/time/datetime-period
 import { EnumToArrayPipe } from '@shared/pipe/enum-to-array.pipe';
 import { ClipboardModule } from 'ngx-clipboard';
 import { ValueInputComponent } from '@shared/components/value-input.component';
-import { MarkdownModule, MarkedOptions } from 'ngx-markdown';
 import { FullscreenDirective } from '@shared/components/fullscreen.directive';
 import { HighlightPipe } from '@shared/pipe/highlight.pipe';
 import { DashboardAutocompleteComponent } from '@shared/components/dashboard-autocomplete.component';
@@ -145,8 +144,6 @@ import { QuickTimeIntervalComponent } from '@shared/components/time/quick-time-i
 import { OtaPackageAutocompleteComponent } from '@shared/components/ota-package/ota-package-autocomplete.component';
 import { MAT_DATE_LOCALE } from '@angular/material/core';
 import { CopyButtonComponent } from '@shared/components/button/copy-button.component';
-import { TogglePasswordComponent } from '@shared/components/button/toggle-password.component';
-import { markedOptionsFactory } from '@shared/components/markdown.factory';
 
 @NgModule({
   providers: [
@@ -245,8 +242,7 @@ import { markedOptionsFactory } from '@shared/components/markdown.factory';
     ContactComponent,
     OtaPackageAutocompleteComponent,
     WidgetsBundleSearchComponent,
-    CopyButtonComponent,
-    TogglePasswordComponent
+    CopyButtonComponent
   ],
   imports: [
     CommonModule,
@@ -296,15 +292,7 @@ import { markedOptionsFactory } from '@shared/components/markdown.factory';
     NgxHmCarouselModule,
     DndModule,
     NgxFlowModule,
-    NgxFlowchartModule,
-    // ngx-markdown
-    MarkdownModule.forRoot({
-      sanitize: SecurityContext.NONE,
-      markedOptions: {
-        provide: MarkedOptions,
-        useFactory: markedOptionsFactory
-      }
-    })
+    NgxFlowchartModule
   ],
   exports: [
     FooterComponent,
@@ -396,7 +384,6 @@ import { markedOptionsFactory } from '@shared/components/markdown.factory';
     NgxHmCarouselModule,
     DndModule,
     NgxFlowchartModule,
-    MarkdownModule,
     ConfirmDialogComponent,
     AlertDialogComponent,
     TodoDialogComponent,
@@ -428,8 +415,7 @@ import { markedOptionsFactory } from '@shared/components/markdown.factory';
     ContactComponent,
     OtaPackageAutocompleteComponent,
     WidgetsBundleSearchComponent,
-    CopyButtonComponent,
-    TogglePasswordComponent
+    CopyButtonComponent
   ]
 })
 export class SharedModule { }

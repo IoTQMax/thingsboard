@@ -24,7 +24,6 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.thingsboard.server.cluster.TbClusterService;
 import org.thingsboard.server.common.data.DataConstants;
 import org.thingsboard.server.common.data.Device;
 import org.thingsboard.server.common.data.DeviceProfile;
@@ -77,9 +76,6 @@ public class DeviceProvisionServiceImpl implements DeviceProvisionService {
 
     private static final String DEVICE_PROVISION_STATE = "provisionState";
     private static final String PROVISIONED_STATE = "provisioned";
-
-    @Autowired
-    TbClusterService clusterService;
 
     @Autowired
     DeviceDao deviceDao;
@@ -194,7 +190,8 @@ public class DeviceProvisionServiceImpl implements DeviceProvisionService {
                 provisionRequest.setDeviceName(newDeviceName);
             }
             Device savedDevice = deviceService.saveDevice(provisionRequest, profile);
-            clusterService.onDeviceUpdated(savedDevice, null);
+
+            deviceStateService.onDeviceAdded(savedDevice);
             saveProvisionStateAttribute(savedDevice).get();
             pushDeviceCreatedEventToRuleEngine(savedDevice);
             notify(savedDevice, provisionRequest, DataConstants.PROVISION_SUCCESS, true);

@@ -115,10 +115,13 @@ public class SwaggerConfiguration {
     }
 
     List<SecurityReference> defaultAuth() {
-        AuthorizationScope[] authorizationScopes = new AuthorizationScope[3];
+        AuthorizationScope[] authorizationScopes = new AuthorizationScope[6];
         authorizationScopes[0] = new AuthorizationScope(Authority.SYS_ADMIN.name(), "System administrator");
         authorizationScopes[1] = new AuthorizationScope(Authority.TENANT_ADMIN.name(), "Tenant administrator");
         authorizationScopes[2] = new AuthorizationScope(Authority.CUSTOMER_USER.name(), "Customer");
+        authorizationScopes[3] = new AuthorizationScope(Authority.TENANT_INTEGRA.name(), "Tenant Integrator");
+        authorizationScopes[4] = new AuthorizationScope(Authority.TENANT_INSTALL.name(), "Tenant Installer");
+        authorizationScopes[5] = new AuthorizationScope(Authority.CUSTOMER_READO.name(), "Customer Read Only");
         return newArrayList(
                 new SecurityReference("X-Authorization", authorizationScopes));
     }

@@ -45,7 +45,7 @@ const routes: Routes = [
   {
     path: 'settings',
     data: {
-      auth: [Authority.SYS_ADMIN, Authority.TENANT_ADMIN],
+      auth: [Authority.SYS_ADMIN, Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
       breadcrumb: {
         label: 'admin.system-settings',
         icon: 'settings'
@@ -55,7 +55,7 @@ const routes: Routes = [
       {
         path: '',
         data: {
-          auth: [Authority.SYS_ADMIN, Authority.TENANT_ADMIN],
+          auth: [Authority.SYS_ADMIN, Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
           redirectTo: {
             SYS_ADMIN: '/settings/general',
             TENANT_ADMIN: '/settings/home'
@@ -135,7 +135,7 @@ const routes: Routes = [
         component: HomeSettingsComponent,
         canDeactivate: [ConfirmOnExitGuard],
         data: {
-          auth: [Authority.TENANT_ADMIN],
+          auth: [Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
           title: 'admin.home-settings',
           breadcrumb: {
             label: 'admin.home-settings',

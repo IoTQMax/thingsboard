@@ -598,8 +598,8 @@
         "make-private-dashboard-title": "Ви впевнені, що хочете зробити панель приладів '{{назва панелі приладів}}' приватною?",
         "make-private-dashboard-text": "Після підтвердження панель приладів стане приватною і не буде доступною іншим.",
         "make-private-dashboard": "Зробити панель приладів приватною",
-        "socialshare-text": "'{{dashboardTitle}}' powered by ThingsBoard",
-        "socialshare-title": "'{{dashboardTitle}}' powered by ThingsBoard",
+        "socialshare-text": "'{{dashboardTitle}}' powered by Effi.ai",
+        "socialshare-title": "'{{dashboardTitle}}' powered by Effi.ai",
         "select-dashboard": "Вибрати панель приладів",
         "no-dashboards-matching": "Не знайдено жодних панелей прилодів'{{entity}}' які відповідають.",
         "dashboard-required": "Необхідно задати панель приладів.",
@@ -794,7 +794,7 @@
         "credentials-type": "Тип авторизаційних даних",
         "access-token": "Маркер доступу",
         "access-token-required": "Необхідно вказати маркер доступу.",
-        "access-token-invalid": "Маркер доступу має бути від 1 до 32 символів.",
+        "access-token-invalid": "Маркер доступу має бути від 1 до 20 символів.",
         "rsa-key": "Публічний ключ RSA",
         "rsa-key-required": "Необхідно вказати публічний ключ RSA.",
         "secret": "Секрет",
@@ -2078,9 +2078,7 @@
         "disable-account": "Вимкнути обліковий запис користувача",
         "enable-account": "Увімкнути обліковий запис користувача",
         "enable-account-message": "Обліковий запис користувача успішно увімкнено!",
-        "disabled-account-message": "Обліковий запис користувача успішно вимкнено!",
-        "copyId": "Копіювати Id користувача",
-        "idCopiedMessage": "Id користувача було скопійовано в буфер обміну"
+        "disabled-account-message": "Обліковий запис користувача успішно вимкнено!"
     },
     "value": {
         "type": "Тип значення",

@@ -23,7 +23,6 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.californium.core.coap.CoAP;
-import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.springframework.stereotype.Component;
@@ -34,6 +33,7 @@ import org.thingsboard.server.common.transport.adaptor.JsonConverter;
 import org.thingsboard.server.gen.transport.TransportProtos;
 import org.thingsboard.server.transport.coap.CoapTransportResource;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -107,7 +107,7 @@ public class JsonCoapAdaptor implements CoapTransportAdaptor {
         Response response = new Response(CoAP.ResponseCode.CONTENT);
         JsonElement result = JsonConverter.toJson(msg);
         response.setPayload(result.toString());
-        response.setConfirmable(isConfirmable);
+        response.setAcknowledged(isConfirmable);
         return response;
     }
 
@@ -125,8 +125,8 @@ public class JsonCoapAdaptor implements CoapTransportAdaptor {
     public Response convertToPublish(boolean isConfirmable, TransportProtos.GetAttributeResponseMsg msg) throws AdaptorException {
         if (msg.getSharedStateMsg()) {
             if (StringUtils.isEmpty(msg.getError())) {
-                Response response = new Response(CoAP.ResponseCode.CONTENT);
-                response.setConfirmable(isConfirmable);
+                Response response = new Response(CoAP.ResponseCode._UNKNOWN_SUCCESS_CODE);
+                response.setAcknowledged(isConfirmable);
                 TransportProtos.AttributeUpdateNotificationMsg notificationMsg = TransportProtos.AttributeUpdateNotificationMsg.newBuilder().addAllSharedUpdated(msg.getSharedAttributeListList()).build();
                 JsonObject result = JsonConverter.toJson(notificationMsg);
                 response.setPayload(result.toString());
@@ -139,7 +139,7 @@ public class JsonCoapAdaptor implements CoapTransportAdaptor {
                 return new Response(CoAP.ResponseCode.NOT_FOUND);
             } else {
                 Response response = new Response(CoAP.ResponseCode.CONTENT);
-                response.setConfirmable(isConfirmable);
+                response.setAcknowledged(isConfirmable);
                 JsonObject result = JsonConverter.toJson(msg);
                 response.setPayload(result.toString());
                 return response;
@@ -148,9 +148,9 @@ public class JsonCoapAdaptor implements CoapTransportAdaptor {
     }
 
     private Response getObserveNotification(boolean confirmable, JsonElement json) {
-        Response response = new Response(CoAP.ResponseCode.CONTENT);
+        Response response = new Response(CoAP.ResponseCode._UNKNOWN_SUCCESS_CODE);
         response.setPayload(json.toString());
-        response.setConfirmable(confirmable);
+        response.setAcknowledged(confirmable);
         return response;
     }
 
@@ -163,11 +163,6 @@ public class JsonCoapAdaptor implements CoapTransportAdaptor {
             }
         }
         return payload;
-    }
-
-    @Override
-    public int getContentFormat() {
-        return MediaTypeRegistry.APPLICATION_JSON;
     }
 
 }

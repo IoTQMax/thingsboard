@@ -134,7 +134,7 @@ export const routes: Routes = [
         path: '',
         component: EntitiesTableComponent,
         data: {
-          auth: [Authority.SYS_ADMIN, Authority.TENANT_ADMIN],
+          auth: [Authority.SYS_ADMIN, Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
           title: 'widgets-bundle.widgets-bundles'
         },
         resolve: {
@@ -157,7 +157,7 @@ export const routes: Routes = [
             path: '',
             component: WidgetLibraryComponent,
             data: {
-              auth: [Authority.SYS_ADMIN, Authority.TENANT_ADMIN],
+              auth: [Authority.SYS_ADMIN, Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
               title: 'widget.widget-library'
             },
             resolve: {
@@ -169,7 +169,7 @@ export const routes: Routes = [
             component: WidgetEditorComponent,
             canDeactivate: [ConfirmOnExitGuard],
             data: {
-              auth: [Authority.SYS_ADMIN, Authority.TENANT_ADMIN],
+              auth: [Authority.SYS_ADMIN, Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
               title: 'widget.editor',
               breadcrumb: {
                 labelFunction: widgetEditorBreadcumbLabelFunction,
@@ -185,7 +185,7 @@ export const routes: Routes = [
             component: WidgetEditorComponent,
             canDeactivate: [ConfirmOnExitGuard],
             data: {
-              auth: [Authority.SYS_ADMIN, Authority.TENANT_ADMIN],
+              auth: [Authority.SYS_ADMIN, Authority.TENANT_ADMIN, Authority.TENANT_INSTALL, Authority.TENANT_INTEGRA], //THERA
               title: 'widget.editor',
               breadcrumb: {
                 labelFunction: widgetEditorBreadcumbLabelFunction,

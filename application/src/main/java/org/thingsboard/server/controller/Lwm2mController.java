@@ -24,11 +24,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.thingsboard.rule.engine.api.msg.DeviceNameOrTypeUpdateMsg;
 import org.thingsboard.server.common.data.Device;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.lwm2m.ServerSecurityConfig;
+import org.thingsboard.server.common.data.plugin.ComponentLifecycleEvent;
 import org.thingsboard.server.common.data.security.DeviceCredentials;
 import org.thingsboard.server.queue.util.TbCoreComponent;
 import org.thingsboard.server.service.security.permission.Resource;
@@ -41,7 +43,7 @@ import java.util.Map;
 @RequestMapping("/api")
 public class Lwm2mController extends BaseController {
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/lwm2m/deviceProfile/bootstrap/{isBootstrapServer}", method = RequestMethod.GET)
     @ResponseBody
     public ServerSecurityConfig getLwm2mBootstrapSecurityInfo(@PathVariable("isBootstrapServer") boolean bootstrapServer) throws ThingsboardException {
@@ -52,7 +54,7 @@ public class Lwm2mController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'TENANT_INSTALL', 'TENANT_INTEGRA', 'CUSTOMER_USER')") //THERA
     @RequestMapping(value = "/lwm2m/device-credentials", method = RequestMethod.POST)
     @ResponseBody
     public Device saveDeviceWithCredentials(@RequestBody (required=false) Map<Class<?>, Object> deviceWithDeviceCredentials) throws ThingsboardException {
@@ -64,11 +66,22 @@ public class Lwm2mController extends BaseController {
             checkEntity(device.getId(), device, Resource.DEVICE);
             Device savedDevice = deviceService.saveDeviceWithCredentials(device, credentials);
             checkNotNull(savedDevice);
-            tbClusterService.onDeviceUpdated(savedDevice, device);
+
+            tbClusterService.onDeviceChange(savedDevice, null);
+            tbClusterService.pushMsgToCore(new DeviceNameOrTypeUpdateMsg(savedDevice.getTenantId(),
+                    savedDevice.getId(), savedDevice.getName(), savedDevice.getType()), null);
+            tbClusterService.onEntityStateChange(savedDevice.getTenantId(), savedDevice.getId(),
+                    device.getId() == null ? ComponentLifecycleEvent.CREATED : ComponentLifecycleEvent.UPDATED);
+
             logEntityAction(savedDevice.getId(), savedDevice,
                     savedDevice.getCustomerId(),
                     device.getId() == null ? ActionType.ADDED : ActionType.UPDATED, null);
 
+            if (device.getId() == null) {
+                deviceStateService.onDeviceAdded(savedDevice);
+            } else {
+                deviceStateService.onDeviceUpdated(savedDevice);
+            }
             return savedDevice;
         } catch (Exception e) {
             logEntityAction(emptyId(EntityType.DEVICE), device,

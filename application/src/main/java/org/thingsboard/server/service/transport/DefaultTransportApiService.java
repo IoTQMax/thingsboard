@@ -22,7 +22,6 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -41,18 +40,14 @@ import org.thingsboard.server.common.data.TbResource;
 import org.thingsboard.server.common.data.TenantProfile;
 import org.thingsboard.server.common.data.device.credentials.BasicMqttCredentials;
 import org.thingsboard.server.common.data.device.credentials.ProvisionDeviceCredentialsData;
-import org.thingsboard.server.common.data.device.data.CoapDeviceTransportConfiguration;
-import org.thingsboard.server.common.data.device.data.Lwm2mDeviceTransportConfiguration;
-import org.thingsboard.server.common.data.device.data.PowerMode;
-import org.thingsboard.server.common.data.device.data.PowerSavingConfiguration;
 import org.thingsboard.server.common.data.device.profile.ProvisionDeviceProfileCredentials;
+import org.thingsboard.server.common.data.ota.OtaPackageType;
+import org.thingsboard.server.common.data.ota.OtaPackageUtil;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.DeviceId;
 import org.thingsboard.server.common.data.id.DeviceProfileId;
 import org.thingsboard.server.common.data.id.OtaPackageId;
 import org.thingsboard.server.common.data.id.TenantId;
-import org.thingsboard.server.common.data.ota.OtaPackageType;
-import org.thingsboard.server.common.data.ota.OtaPackageUtil;
 import org.thingsboard.server.common.data.page.PageData;
 import org.thingsboard.server.common.data.page.PageLink;
 import org.thingsboard.server.common.data.relation.EntityRelation;
@@ -95,7 +90,7 @@ import org.thingsboard.server.queue.util.TbCoreComponent;
 import org.thingsboard.server.service.apiusage.TbApiUsageStateService;
 import org.thingsboard.server.service.executors.DbCallbackExecutorService;
 import org.thingsboard.server.service.profile.TbDeviceProfileCache;
-import org.thingsboard.server.cluster.TbClusterService;
+import org.thingsboard.server.service.queue.TbClusterService;
 import org.thingsboard.server.service.resource.TbResourceService;
 import org.thingsboard.server.service.state.DeviceStateService;
 
@@ -113,7 +108,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @TbCoreComponent
-@RequiredArgsConstructor
 public class DefaultTransportApiService implements TransportApiService {
 
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -134,6 +128,28 @@ public class DefaultTransportApiService implements TransportApiService {
     private final OtaPackageDataCache otaPackageDataCache;
 
     private final ConcurrentMap<String, ReentrantLock> deviceCreationLocks = new ConcurrentHashMap<>();
+
+    public DefaultTransportApiService(TbDeviceProfileCache deviceProfileCache,
+                                      TbTenantProfileCache tenantProfileCache, TbApiUsageStateService apiUsageStateService, DeviceService deviceService,
+                                      RelationService relationService, DeviceCredentialsService deviceCredentialsService,
+                                      DeviceStateService deviceStateService, DbCallbackExecutorService dbCallbackExecutorService,
+                                      TbClusterService tbClusterService, DataDecodingEncodingService dataDecodingEncodingService,
+                                      DeviceProvisionService deviceProvisionService, TbResourceService resourceService, OtaPackageService otaPackageService, OtaPackageDataCache otaPackageDataCache) {
+        this.deviceProfileCache = deviceProfileCache;
+        this.tenantProfileCache = tenantProfileCache;
+        this.apiUsageStateService = apiUsageStateService;
+        this.deviceService = deviceService;
+        this.relationService = relationService;
+        this.deviceCredentialsService = deviceCredentialsService;
+        this.deviceStateService = deviceStateService;
+        this.dbCallbackExecutorService = dbCallbackExecutorService;
+        this.tbClusterService = tbClusterService;
+        this.dataDecodingEncodingService = dataDecodingEncodingService;
+        this.deviceProvisionService = deviceProvisionService;
+        this.resourceService = resourceService;
+        this.otaPackageService = otaPackageService;
+        this.otaPackageDataCache = otaPackageDataCache;
+    }
 
     @Override
     public ListenableFuture<TbProtoQueueMsg<TransportApiResponseMsg>> handle(TbProtoQueueMsg<TransportApiRequestMsg> tbProtoQueueMsg) {
@@ -265,11 +281,9 @@ public class DefaultTransportApiService implements TransportApiService {
                     device.setCustomerId(gateway.getCustomerId());
                     DeviceProfile deviceProfile = deviceProfileCache.findOrCreateDeviceProfile(gateway.getTenantId(), requestMsg.getDeviceType());
                     device.setDeviceProfileId(deviceProfile.getId());
-                    Device savedDevice = deviceService.saveDevice(device);
-                    tbClusterService.onDeviceUpdated(savedDevice, null);
-                    device = savedDevice;
-
+                    device = deviceService.saveDevice(device);
                     relationService.saveRelationAsync(TenantId.SYS_TENANT_ID, new EntityRelation(gateway.getId(), device.getId(), "Created"));
+                    deviceStateService.onDeviceAdded(device);
 
                     TbMsgMetaData metaData = new TbMsgMetaData();
                     CustomerId customerId = gateway.getCustomerId();
@@ -465,7 +479,7 @@ public class DefaultTransportApiService implements TransportApiService {
     }
 
     private DeviceInfoProto getDeviceInfoProto(Device device) throws JsonProcessingException {
-        DeviceInfoProto.Builder builder = DeviceInfoProto.newBuilder()
+        return DeviceInfoProto.newBuilder()
                 .setTenantIdMSB(device.getTenantId().getId().getMostSignificantBits())
                 .setTenantIdLSB(device.getTenantId().getId().getLeastSignificantBits())
                 .setCustomerIdMSB(Optional.ofNullable(device.getCustomerId()).map(customerId -> customerId.getId().getMostSignificantBits()).orElse(0L))
@@ -476,31 +490,8 @@ public class DefaultTransportApiService implements TransportApiService {
                 .setDeviceType(device.getType())
                 .setDeviceProfileIdMSB(device.getDeviceProfileId().getId().getMostSignificantBits())
                 .setDeviceProfileIdLSB(device.getDeviceProfileId().getId().getLeastSignificantBits())
-                .setAdditionalInfo(mapper.writeValueAsString(device.getAdditionalInfo()));
-
-        PowerSavingConfiguration psmConfiguration = null;
-        switch (device.getDeviceData().getTransportConfiguration().getType()) {
-            case LWM2M:
-                psmConfiguration = (Lwm2mDeviceTransportConfiguration) device.getDeviceData().getTransportConfiguration();
-                break;
-            case COAP:
-                psmConfiguration = (CoapDeviceTransportConfiguration) device.getDeviceData().getTransportConfiguration();
-                break;
-        }
-
-        if (psmConfiguration != null) {
-            PowerMode powerMode = psmConfiguration.getPowerMode();
-            if (powerMode != null) {
-                builder.setPowerMode(powerMode.name());
-                if (powerMode.equals(PowerMode.PSM)) {
-                    builder.setPsmActivityTimer(checkLong(psmConfiguration.getPsmActivityTimer()));
-                } else if (powerMode.equals(PowerMode.E_DRX)) {
-                    builder.setEdrxCycle(checkLong(psmConfiguration.getEdrxCycle()));
-                    builder.setPagingTransmissionWindow(checkLong(psmConfiguration.getPagingTransmissionWindow()));
-                }
-            }
-        }
-        return builder.build();
+                .setAdditionalInfo(mapper.writeValueAsString(device.getAdditionalInfo()))
+                .build();
     }
 
     private ListenableFuture<TransportApiResponseMsg> getEmptyTransportApiResponseFuture() {
@@ -583,7 +574,7 @@ public class DefaultTransportApiService implements TransportApiService {
                 device.setName(deviceName);
                 device.setType("LwM2M");
                 device = deviceService.saveDevice(device);
-                tbClusterService.onDeviceUpdated(device, null);
+                deviceStateService.onDeviceAdded(device);
             }
             TransportProtos.LwM2MRegistrationResponseMsg registrationResponseMsg =
                     TransportProtos.LwM2MRegistrationResponseMsg.newBuilder()
@@ -596,9 +587,5 @@ public class DefaultTransportApiService implements TransportApiService {
         } finally {
             deviceCreationLock.unlock();
         }
-    }
-
-    private Long checkLong(Long l) {
-        return l != null ? l : 0;
     }
 }

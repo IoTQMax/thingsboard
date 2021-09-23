@@ -96,10 +96,4 @@ public class InMemoryTbQueueConsumer<T extends TbQueueMsg> implements TbQueueCon
     @Override
     public void commit() {
     }
-
-    @Override
-    public boolean isStopped() {
-        return stopped;
-    }
-
 }

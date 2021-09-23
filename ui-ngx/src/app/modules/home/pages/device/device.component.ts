@@ -14,7 +14,7 @@
 /// limitations under the License.
 ///
 
-import { ChangeDetectorRef, Component, Inject } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { AppState } from '@core/core.state';
 import { EntityComponent } from '../../components/entity/entity.component';
@@ -48,7 +48,7 @@ export class DeviceComponent extends EntityComponent<DeviceInfo> {
 
   deviceCredentials$: Subject<DeviceCredentials>;
 
-  deviceScope: 'tenant' | 'customer' | 'customer_user' | 'edge' | 'edge_customer_user';
+  deviceScope: 'tenant' | 'customer' | 'customer_user' | 'edge';
 
   otaUpdateType = OtaUpdateType;
 
@@ -56,9 +56,8 @@ export class DeviceComponent extends EntityComponent<DeviceInfo> {
               protected translate: TranslateService,
               @Inject('entity') protected entityValue: DeviceInfo,
               @Inject('entitiesTableConfig') protected entitiesTableConfigValue: EntityTableConfig<DeviceInfo>,
-              public fb: FormBuilder,
-              protected cd: ChangeDetectorRef) {
-    super(store, fb, entityValue, entitiesTableConfigValue, cd);
+              public fb: FormBuilder) {
+    super(store, fb, entityValue, entitiesTableConfigValue);
   }
 
   ngOnInit() {

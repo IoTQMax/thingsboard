@@ -33,7 +33,6 @@ import org.thingsboard.rule.engine.api.TbRelationTypes;
 import org.thingsboard.rule.engine.api.sms.SmsSenderFactory;
 import org.thingsboard.server.actors.ActorSystemContext;
 import org.thingsboard.server.actors.TbActorRef;
-import org.thingsboard.server.cluster.TbClusterService;
 import org.thingsboard.server.common.data.Customer;
 import org.thingsboard.server.common.data.DataConstants;
 import org.thingsboard.server.common.data.Device;
@@ -224,7 +223,7 @@ class DefaultTbContext implements TbContext {
         }
         if (nodeCtx.getSelf().isDebugMode()) {
             relationTypes.forEach(relationType ->
-                    mainCtx.persistDebugOutput(nodeCtx.getTenantId(), nodeCtx.getSelf().getId(), tbMsg, relationType, null, failureMessage));
+                    mainCtx.persistDebugOutput(nodeCtx.getTenantId(), nodeCtx.getSelf().getId(), tbMsg, relationType));
         }
         mainCtx.getClusterService().pushMsgToRuleEngine(tpi, tbMsg.getId(), msg.build(), new SimpleTbQueueCallback(onSuccess, onFailure));
     }
@@ -369,6 +368,11 @@ class DefaultTbContext implements TbContext {
     }
 
     @Override
+    public ListeningExecutor getJsExecutor() {
+        return mainCtx.getJsExecutor();
+    }
+
+    @Override
     public ListeningExecutor getMailExecutor() {
         return mainCtx.getMailExecutor();
     }
@@ -450,11 +454,6 @@ class DefaultTbContext implements TbContext {
     }
 
     @Override
-    public TbClusterService getClusterService() {
-        return mainCtx.getClusterService();
-    }
-
-    @Override
     public DashboardService getDashboardService() {
         return mainCtx.getDashboardService();
     }
@@ -520,8 +519,8 @@ class DefaultTbContext implements TbContext {
     }
 
     @Override
-    public MailService getMailService(boolean isSystem) {
-        if (!isSystem || mainCtx.isAllowSystemMailService()) {
+    public MailService getMailService() {
+        if (mainCtx.isAllowSystemMailService()) {
             return mainCtx.getMailService();
         } else {
             throw new RuntimeException("Access to System Mail Service is forbidden!");

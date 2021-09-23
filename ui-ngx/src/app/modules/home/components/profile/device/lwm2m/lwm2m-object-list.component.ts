@@ -28,12 +28,11 @@ import {
 import { coerceBooleanProperty } from '@angular/cdk/coercion';
 import { Observable } from 'rxjs';
 import { distinctUntilChanged, filter, mergeMap, share, tap } from 'rxjs/operators';
-import { ObjectLwM2M, PAGE_SIZE_LIMIT } from './lwm2m-profile-config.models';
+import { ModelValue, ObjectLwM2M, PAGE_SIZE_LIMIT } from './lwm2m-profile-config.models';
 import { DeviceProfileService } from '@core/http/device-profile.service';
 import { Direction } from '@shared/models/page/sort-order';
 import { isDefined, isDefinedAndNotNull, isString } from '@core/utils';
 import { PageLink } from '@shared/models/page/page-link';
-import { TruncatePipe } from '@shared/pipe/truncate.pipe';
 
 @Component({
   selector: 'tb-profile-lwm2m-object-list',
@@ -55,6 +54,7 @@ export class Lwm2mObjectListComponent implements ControlValueAccessor, OnInit, V
 
   private requiredValue: boolean;
   private dirty = false;
+  private modelValue: Array<string> = [];
 
   lwm2mListFormGroup: FormGroup;
   objectsList: Array<ObjectLwM2M> = [];
@@ -83,8 +83,7 @@ export class Lwm2mObjectListComponent implements ControlValueAccessor, OnInit, V
   private propagateChange = (v: any) => {
   }
 
-  constructor(public truncate: TruncatePipe,
-              private deviceProfileService: DeviceProfileService,
+  constructor(private deviceProfileService: DeviceProfileService,
               private fb: FormBuilder) {
     this.lwm2mListFormGroup = this.fb.group({
       objectsList: [this.objectsList],
@@ -93,7 +92,7 @@ export class Lwm2mObjectListComponent implements ControlValueAccessor, OnInit, V
     this.lwm2mListFormGroup.valueChanges.subscribe((value) => {
       let formValue = null;
       if (this.lwm2mListFormGroup.valid) {
-        formValue = value.objectsList;
+        formValue = value;
       }
       this.propagateChange(formValue);
     });
@@ -114,15 +113,15 @@ export class Lwm2mObjectListComponent implements ControlValueAccessor, OnInit, V
   ngOnInit() {
     this.filteredObjectsList = this.lwm2mListFormGroup.get('objectLwm2m').valueChanges
       .pipe(
+        distinctUntilChanged(),
         tap((value) => {
-          if (value && !isString(value)) {
+          if (value && typeof value !== 'string') {
             this.add(value);
           } else if (value === null) {
-            this.clear(this.objectInput.nativeElement.value);
+            this.clear();
           }
         }),
         filter(searchText => isString(searchText)),
-        distinctUntilChanged(),
         mergeMap(searchText => this.fetchListObjects(searchText)),
         share()
       );
@@ -133,20 +132,22 @@ export class Lwm2mObjectListComponent implements ControlValueAccessor, OnInit, V
     if (isDisabled) {
       this.lwm2mListFormGroup.disable({emitEvent: false});
       if (isDefined(this.objectInput)) {
-        this.clear('', false);
+        this.clear();
       }
     } else {
       this.lwm2mListFormGroup.enable({emitEvent: false});
     }
   }
 
-  writeValue(value: ObjectLwM2M[]): void {
+  writeValue(value: ModelValue): void {
     this.searchText = '';
     if (isDefinedAndNotNull(value)) {
-      if (Array.isArray(value)) {
-        this.objectsList = value;
+      if (Array.isArray(value.objectIds)) {
+        this.modelValue = value.objectIds;
+        this.objectsList = value.objectsList;
       } else {
         this.objectsList = [];
+        this.modelValue = [];
       }
       this.lwm2mListFormGroup.patchValue({objectsList: this.objectsList}, {emitEvent: false});
       this.dirty = false;
@@ -160,7 +161,8 @@ export class Lwm2mObjectListComponent implements ControlValueAccessor, OnInit, V
   }
 
   private add(object: ObjectLwM2M): void {
-    if (isDefinedAndNotNull(this.objectsList) && this.objectsList.findIndex(item => item.keyId === object.keyId) === -1) {
+    if (isDefinedAndNotNull(this.modelValue) && this.modelValue.indexOf(object.keyId) === -1) {
+      this.modelValue.push(object.keyId);
       this.objectsList.push(object);
       this.lwm2mListFormGroup.get('objectsList').setValue(this.objectsList);
       this.addList.next(this.objectsList);
@@ -169,17 +171,19 @@ export class Lwm2mObjectListComponent implements ControlValueAccessor, OnInit, V
   }
 
   remove = (object: ObjectLwM2M): void => {
-    const index = this.objectsList.indexOf(object);
+    let index = this.objectsList.indexOf(object);
     if (index >= 0) {
       this.objectsList.splice(index, 1);
       this.lwm2mListFormGroup.get('objectsList').setValue(this.objectsList);
+      index = this.modelValue.indexOf(object.keyId);
+      this.modelValue.splice(index, 1);
       this.removeList.next(object);
       this.clear();
     }
   }
 
-  displayObjectLwm2mFn = (object?: ObjectLwM2M): string => {
-    return object ? object.name : '';
+  displayObjectLwm2mFn = (object?: ObjectLwM2M): string | undefined => {
+    return object ? object.name : undefined;
   }
 
   private fetchListObjects = (searchText: string): Observable<Array<ObjectLwM2M>> =>  {
@@ -198,18 +202,12 @@ export class Lwm2mObjectListComponent implements ControlValueAccessor, OnInit, V
     }
   }
 
-  textIsNotEmpty(text: string): boolean {
-    return (text && text.length > 0);
-  }
-
-  private clear(value = '', emitEvent = true) {
-    this.objectInput.nativeElement.value = value;
-    this.lwm2mListFormGroup.get('objectLwm2m').patchValue(value, {emitEvent});
-    if (emitEvent) {
-      setTimeout(() => {
-        this.objectInput.nativeElement.blur();
-        this.objectInput.nativeElement.focus();
-      }, 0);
-    }
+  private clear() {
+    this.searchText = '';
+    this.lwm2mListFormGroup.get('objectLwm2m').patchValue(null, {emitEvent: false});
+    setTimeout(() => {
+      this.objectInput.nativeElement.blur();
+      this.objectInput.nativeElement.focus();
+    }, 0);
   }
 }

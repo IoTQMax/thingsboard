@@ -25,6 +25,4 @@ import org.thingsboard.server.service.rpc.ToDeviceRpcRequestActorMsg;
 public class ToDeviceRpcRequestMetadata {
     private final ToDeviceRpcRequestActorMsg msg;
     private final boolean sent;
-    private int retries;
-    private boolean delivered;
 }

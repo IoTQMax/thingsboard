@@ -71,11 +71,13 @@ public class JpaUserDao extends JpaAbstractSearchTextDao<UserEntity, User> imple
     public PageData<User> findTenantAdmins(UUID tenantId, PageLink pageLink) {
         return DaoUtil.toPageData(
                 userRepository
-                        .findUsersByAuthority(
+                        .findUsersByAuthority3(
                                 tenantId,
                                 NULL_UUID,
                                 Objects.toString(pageLink.getTextSearch(), ""),
                                 Authority.TENANT_ADMIN,
+                                Authority.TENANT_INTEGRA, //THERA
+                                Authority.TENANT_INSTALL, //THERA
                                 DaoUtil.toPageable(pageLink)));
     }
 
@@ -83,11 +85,12 @@ public class JpaUserDao extends JpaAbstractSearchTextDao<UserEntity, User> imple
     public PageData<User> findCustomerUsers(UUID tenantId, UUID customerId, PageLink pageLink) {
         return DaoUtil.toPageData(
                 userRepository
-                        .findUsersByAuthority(
+                        .findUsersByAuthority2(
                                 tenantId,
                                 customerId,
                                 Objects.toString(pageLink.getTextSearch(), ""),
                                 Authority.CUSTOMER_USER,
+                                Authority.CUSTOMER_READO, //THERA
                                 DaoUtil.toPageable(pageLink)));
 
     }

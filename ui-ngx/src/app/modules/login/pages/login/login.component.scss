@@ -21,7 +21,7 @@
   .tb-login-content {
     margin-top: 36px;
     margin-bottom: 76px;
-    background-color: #eee;
+    background-color: rgb(51, 51, 51);
     .tb-login-form {
       @media #{$mat-gt-xs} {
         width: 550px !important;

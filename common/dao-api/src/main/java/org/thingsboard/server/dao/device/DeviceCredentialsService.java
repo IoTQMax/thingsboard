@@ -29,7 +29,5 @@ public interface DeviceCredentialsService {
 
     DeviceCredentials createDeviceCredentials(TenantId tenantId, DeviceCredentials deviceCredentials);
 
-    void formatCredentials(DeviceCredentials deviceCredentials);
-
     void deleteDeviceCredentials(TenantId tenantId, DeviceCredentials deviceCredentials);
 }

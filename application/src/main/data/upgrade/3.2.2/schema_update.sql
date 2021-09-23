@@ -67,7 +67,6 @@ CREATE TABLE IF NOT EXISTS ota_package (
     type varchar(32) NOT NULL,
     title varchar(255) NOT NULL,
     version varchar(255) NOT NULL,
-    tag varchar(255),
     url varchar(255),
     file_name varchar(255),
     content_type varchar(255),
@@ -143,9 +142,7 @@ CREATE TABLE IF NOT EXISTS oauth2_mobile (
 );
 
 ALTER TABLE dashboard
-    ADD COLUMN IF NOT EXISTS image varchar(1000000),
-    ADD COLUMN IF NOT EXISTS mobile_hide boolean DEFAULT false,
-    ADD COLUMN IF NOT EXISTS mobile_order int;
+    ADD COLUMN IF NOT EXISTS image varchar(1000000);
 
 ALTER TABLE device_profile
     ADD COLUMN IF NOT EXISTS image varchar(1000000),
@@ -159,6 +156,10 @@ ALTER TABLE device
 
 ALTER TABLE alarm
     ADD COLUMN IF NOT EXISTS customer_id uuid;
+
+ALTER TABLE customer
+    ADD COLUMN IF NOT EXISTS integrator_id uuid; --THERA
+    ADD COLUMN IF NOT EXISTS installer_id uuid;  --THERA
 
 DELETE FROM relation WHERE from_type = 'TENANT' AND relation_type_group = 'RULE_CHAIN';
 
@@ -200,17 +201,3 @@ $$;
 ALTER TABLE api_usage_state
     ADD COLUMN IF NOT EXISTS alarm_exec VARCHAR(32);
 UPDATE api_usage_state SET alarm_exec = 'ENABLED' WHERE alarm_exec IS NULL;
-
-CREATE TABLE IF NOT EXISTS rpc (
-    id uuid NOT NULL CONSTRAINT rpc_pkey PRIMARY KEY,
-    created_time bigint NOT NULL,
-    tenant_id uuid NOT NULL,
-    device_id uuid NOT NULL,
-    expiration_time bigint NOT NULL,
-    request varchar(10000000) NOT NULL,
-    response varchar(10000000),
-    additional_info varchar(10000000),
-    status varchar(255) NOT NULL
-);
-
-CREATE INDEX IF NOT EXISTS idx_rpc_tenant_id_device_id ON rpc(tenant_id, device_id);

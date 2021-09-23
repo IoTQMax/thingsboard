@@ -18,8 +18,12 @@ import { CustomerId } from '@shared/models/id/customer-id';
 import { ContactBased } from '@shared/models/contact-based.model';
 import { TenantId } from './id/tenant-id';
 
+import { UserId } from './id/user-id'; //THERA
+
 export interface Customer extends ContactBased<CustomerId> {
   tenantId: TenantId;
+  integratorId: UserId; //THERA
+  installerId: UserId;  //THERA
   title: string;
   additionalInfo?: any;
 }
